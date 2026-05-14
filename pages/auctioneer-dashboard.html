@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auctioneer Workspace - WooAuctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Primary navigation">
+      <a href="index.html" class="logo">WooAuctions</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse-auctions.html">Auctions</a></li>
+        <li><a href="auctioneer-dashboard.html" class="active">Auctioneer</a></li>
+        <li><a href="login.html">Switch Role</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="theme-toggle">
+          <span class="theme-sun" aria-hidden="true"></span>
+          <button class="toggle-track" type="button" aria-label="Toggle dark/light mode" data-theme-toggle></button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="page-hero">
+      <div>
+        <span class="eyebrow">Auctioneer Workspace</span>
+        <h1>Upload goods and track approval.</h1>
+        <p class="section-copy">Auctioneers prepare listings here. Admin approval publishes approved lots to the auctionee marketplace.</p>
+      </div>
+      <a class="btn btn-primary" href="login.html">Switch Role</a>
+    </section>
+
+    <section class="dashboard-grid" aria-label="Auctioneer metrics">
+      <div class="stat-card"><span class="stat-icon">P</span><div class="stat-number">8</div><div class="stat-label">Pending Approval</div></div>
+      <div class="stat-card green"><span class="stat-icon">L</span><div class="stat-number">21</div><div class="stat-label">Live Lots</div></div>
+      <div class="stat-card orange"><span class="stat-icon">R</span><div class="stat-number">3</div><div class="stat-label">Needs Revision</div></div>
+      <div class="stat-card"><span class="stat-icon">W</span><div class="stat-number">Rs 186k</div><div class="stat-label">Winning Bids</div></div>
+    </section>
+
+    <section class="grid grid-2">
+      <div class="card">
+        <h2 class="card-header">Submit New Auction Lot</h2>
+        <form data-demo-form data-success="Lot submitted to admin approval queue.">
+          <div class="form-group">
+            <label for="lot-title">Item Title</label>
+            <input id="lot-title" type="text" required placeholder="Canon EOS R6 Creator Bundle">
+          </div>
+          <div class="form-group">
+            <label for="lot-category">Category</label>
+            <select id="lot-category" required>
+              <option>Electronics</option>
+              <option>Vehicles</option>
+              <option>Property</option>
+              <option>Home Decor</option>
+              <option>Collectibles</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reserve-price">Reserve Price</label>
+            <input id="reserve-price" type="number" min="1" required placeholder="230000">
+          </div>
+          <div class="form-group">
+            <label for="lot-proof">Condition and Proof Notes</label>
+            <textarea id="lot-proof" required placeholder="Receipt uploaded, serial verified, condition photos ready."></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">Submit for Admin Approval</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="panel-header">
+          <h2 class="card-header">My Listings</h2>
+          <span class="status-chip pending">Admin review required</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Item</th><th>Reserve</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>#AU1007</td><td>Canon EOS R6 Creator Bundle</td><td>Rs 230,000</td><td><span class="status-chip pending">Pending</span></td><td><button class="icon-btn" data-toast="Opening proof checklist">Proof</button></td></tr>
+              <tr><td>#AU1008</td><td>Toyota Hilux Workmate</td><td>Rs 3.1M</td><td><span class="status-chip pending">Pending</span></td><td><button class="icon-btn" data-toast="Opening documents">Docs</button></td></tr>
+              <tr><td>#AU901</td><td>Powerbank 20,000 mAh</td><td>Rs 499</td><td><span class="status-chip active">Live</span></td><td><button class="icon-btn" data-toast="Showing live activity">Activity</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

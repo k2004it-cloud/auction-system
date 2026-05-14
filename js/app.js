@@ -156,15 +156,55 @@ const AuctionApp = (() => {
     });
   };
 
+  const roleLabels = {
+    admin: "Admin",
+    auctioneer: "Auctioneer",
+    auctionee: "Auctionee"
+  };
+
+  const roleDestinations = {
+    admin: "admin-dashboard.html",
+    auctioneer: "auctioneer-dashboard.html",
+    auctionee: "auctionee-dashboard.html"
+  };
+
+  const normalizeRole = (role) => (roleLabels[role] ? role : "auctionee");
+
+  const getSelectedRole = (form) => {
+    const selected = form.querySelector("input[name='login-role']:checked, input[name='register-role']:checked");
+    return normalizeRole(selected?.value);
+  };
+
+  const openRoleWorkspace = (role) => {
+    const nextRole = normalizeRole(role);
+    localStorage.setItem("woo-auth-role", nextRole);
+    window.setTimeout(() => {
+      window.location.href = roleDestinations[nextRole];
+    }, 760);
+  };
+
   const initForms = () => {
     document.querySelectorAll("[data-demo-form]").forEach((form) => {
       form.addEventListener("submit", (event) => {
         event.preventDefault();
+
+        if (form.id === "loginForm") {
+          const role = getSelectedRole(form);
+          toast(`Login successful. Opening ${roleLabels[role]} workspace.`, "success");
+          openRoleWorkspace(role);
+          return;
+        }
+
         if (form.id === "registerForm") {
           const password = form.querySelector("#reg-password")?.value;
           const confirm = form.querySelector("#reg-confirm")?.value;
           if (password !== confirm) return toast("Passwords do not match", "error");
+          const role = getSelectedRole(form);
+          toast(`${roleLabels[role]} account created. Opening workspace.`, "success");
+          openRoleWorkspace(role);
+          return;
         }
+
         toast(form.dataset.success || "Saved successfully", "success");
       });
     });
@@ -258,7 +298,7 @@ const AuctionApp = (() => {
         return `You are in ${context.title}. I can help review auctions, users, categories, moderation steps, and admin actions shown on this page.`;
       }
       if (context.pageType === "login") {
-        return "You are on membership access. I can help a user sign in, create an account, understand wallet benefits, or fix common form issues.";
+        return "You are on membership access. Choose Admin, Auctioneer, or Auctionee before signing in so the system opens the right workspace.";
       }
       return "You are on WooAuctions home. I can help users find auctions, understand wallet balances, place bids, manage watchlists, and move to the right next step.";
     };
@@ -310,7 +350,7 @@ const AuctionApp = (() => {
       }
 
       if (includesAny(query, ["login", "register", "account", "membership", "password"])) {
-        return "Create an account to save watchlists, use wallet funds, place bids, and track wins. If registering, make sure the password and confirmation match before submitting.";
+        return "Choose a role on the access form first: Admin opens moderation, Auctioneer opens listing uploads, and Auctionee opens bidding. If registering, make sure the password and confirmation match before submitting.";
       }
 
       if (includesAny(query, ["admin", "approve", "reject", "pause", "user", "category", "moderation"])) {
@@ -403,7 +443,7 @@ const AuctionApp = (() => {
       if (type === "bid") return ["Can I place this bid?", "Manual or proxy bid?", "What happens after I win?"];
       if (type === "details") return ["Summarize this lot", "Should I use proxy bidding?", "What should I verify?"];
       if (type === "browse") return ["Find ending soon lots", "How do filters work?", "What should I bid on?"];
-      if (type === "login") return ["Help me create an account", "Why do I need wallet access?", "Fix registration issues"];
+      if (type === "login") return ["Which role should I pick?", "Help me create an account", "Fix registration issues"];
       if (type.includes("admin")) return ["What needs attention?", "How do I approve safely?", "Summarize this admin page"];
       return ["Help me find an auction", "How do I place a bid?", "How does the wallet work?"];
     };

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auctionee Workspace - WooAuctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Primary navigation">
+      <a href="index.html" class="logo">WooAuctions</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse-auctions.html">Auctions</a></li>
+        <li><a href="auctionee-dashboard.html" class="active">Auctionee</a></li>
+        <li><a href="login.html">Switch Role</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="theme-toggle">
+          <span class="theme-sun" aria-hidden="true"></span>
+          <button class="toggle-track" type="button" aria-label="Toggle dark/light mode" data-theme-toggle></button>
+        </div>
+        <div class="wallet-chip" aria-label="Wallet balance">
+          <span class="wallet-icon" aria-hidden="true"></span>
+          <span><small>Wallet</small>Rs 110</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="page-hero">
+      <div>
+        <span class="eyebrow">Auctionee Workspace</span>
+        <h1>Bid, watch, and manage your wins.</h1>
+        <p class="section-copy">Auctionees use this side of the system to browse live lots, place bids, manage wallet holds, and track results.</p>
+      </div>
+      <a class="btn btn-primary" href="browse-auctions.html">Browse Auctions</a>
+    </section>
+
+    <section class="dashboard-grid" aria-label="Auctionee metrics">
+      <div class="stat-card"><span class="stat-icon">B</span><div class="stat-number">12</div><div class="stat-label">Active Bids</div></div>
+      <div class="stat-card green"><span class="stat-icon">W</span><div class="stat-number">7</div><div class="stat-label">Auctions Won</div></div>
+      <div class="stat-card orange"><span class="stat-icon">A</span><div class="stat-number">6</div><div class="stat-label">Auto-Bids</div></div>
+      <div class="stat-card"><span class="stat-icon">S</span><div class="stat-number">34</div><div class="stat-label">Saved Lots</div></div>
+    </section>
+
+    <section class="grid grid-2">
+      <div class="card">
+        <div class="panel-header">
+          <h2 class="card-header">Recommended Live Lots</h2>
+          <a class="btn btn-secondary" href="browse-auctions.html">View All</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Lot</th><th>Current Bid</th><th>Ends</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Powerbank 20,000 mAh</td><td>Rs 499</td><td>7d 3h</td><td><a class="btn btn-primary" href="place-bid.html">Bid</a></td></tr>
+              <tr><td>TWS Earbuds</td><td>Rs 1</td><td>7d 3h</td><td><a class="btn btn-primary" href="place-bid.html">Bid</a></td></tr>
+              <tr><td>Eco Dot Combo</td><td>Rs 1</td><td>27d 15h</td><td><a class="btn btn-primary" href="place-bid.html">Bid</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-header">My Bid Activity</h2>
+        <div class="activity-list">
+          <div class="activity-item success"><strong>You are winning</strong><p class="muted">Powerbank 20,000 mAh is currently yours at Rs 499.</p></div>
+          <div class="activity-item warning"><strong>Auto-bid protected</strong><p class="muted">Proxy bidding is active on TWS Earbuds up to your limit.</p></div>
+          <div class="activity-item"><strong>Watchlist saved</strong><p class="muted">Vintage Home Decor was added to your watchlist.</p></div>
+          <div class="activity-item danger"><strong>Payment reminder</strong><p class="muted">Fund your wallet before placing higher bids.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

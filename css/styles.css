@@ -1100,6 +1100,97 @@ main.auction-home {
   text-decoration: none;
 }
 
+.form-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--text-white);
+  font-weight: 750;
+}
+
+.role-selector {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.role-option {
+  display: block;
+  margin: 0;
+}
+
+.role-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.role-option-body {
+  display: grid;
+  align-content: center;
+  min-height: 82px;
+  padding: 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.role-option-body strong {
+  color: var(--text-white);
+  font-size: 0.92rem;
+}
+
+.role-option-body small {
+  margin-top: 0.22rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.role-option input:checked + .role-option-body,
+.role-option-body:hover {
+  border-color: rgba(216, 187, 92, 0.55);
+  background: rgba(216, 187, 92, 0.12);
+  color: var(--primary-gold);
+  transform: translateY(-1px);
+}
+
+.role-paths {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 1.25rem;
+}
+
+.role-path-card {
+  display: grid;
+  gap: 0.4rem;
+  min-height: 118px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.role-path-card:hover {
+  border-color: rgba(216, 187, 92, 0.5);
+  background: rgba(216, 187, 92, 0.1);
+  transform: translateY(-2px);
+}
+
+.role-path-card strong {
+  color: var(--primary-gold);
+  font-family: Poppins, Inter, sans-serif;
+}
+
+.role-path-card span {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
 /* ===== ADMIN ===== */
 .admin-container {
   display: grid;
@@ -1936,6 +2027,10 @@ body.light-mode .ai-hub-suggestions button {
     grid-template-columns: 1fr;
   }
 
+  .role-paths {
+    grid-template-columns: 1fr;
+  }
+
   .admin-sidebar {
     position: relative;
     height: auto;
@@ -2028,6 +2123,10 @@ body.light-mode .ai-hub-suggestions button {
   .search-bar,
   .compact-search {
     min-width: 100%;
+  }
+
+  .role-selector {
+    grid-template-columns: 1fr;
   }
 
   .bid-container,
