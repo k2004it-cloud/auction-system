@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories - WooAuctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="index.html">WooAuctions Admin</a>
+      <nav class="admin-nav" aria-label="Admin navigation">
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-categories.html" class="active">Categories</a>
+        <a href="admin-auctions.html">Manage Auctions</a>
+        <a href="admin-users.html">Users</a>
+        <a href="index.html">Back to Home</a>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <section class="admin-header">
+        <div>
+          <h1>Categories</h1>
+          <p class="section-copy">Organize listings, feature trending groups, and keep catalog rules tidy.</p>
+        </div>
+        <button class="btn btn-primary" type="button" data-toast="Add category form prepared">Add Category</button>
+      </section>
+
+      <section class="category-grid" aria-label="Category cards">
+        <article class="category-card"><span class="category-icon">J</span><h2 class="category-name">Jewelry</h2><p class="category-count">156 items</p><div class="action-buttons"><button class="btn btn-secondary" data-toast="Editing Jewelry">Edit</button><button class="btn btn-danger" data-toast="Jewelry category archived">Archive</button></div></article>
+        <article class="category-card"><span class="category-icon">E</span><h2 class="category-name">Electronics</h2><p class="category-count">342 items</p><div class="action-buttons"><button class="btn btn-secondary" data-toast="Editing Electronics">Edit</button><button class="btn btn-danger" data-toast="Electronics category archived">Archive</button></div></article>
+        <article class="category-card"><span class="category-icon">A</span><h2 class="category-name">Art & Collectibles</h2><p class="category-count">234 items</p><div class="action-buttons"><button class="btn btn-secondary" data-toast="Editing Art">Edit</button><button class="btn btn-danger" data-toast="Art category archived">Archive</button></div></article>
+        <article class="category-card"><span class="category-icon">D</span><h2 class="category-name">Home Decor</h2><p class="category-count">278 items</p><div class="action-buttons"><button class="btn btn-secondary" data-toast="Editing Decor">Edit</button><button class="btn btn-danger" data-toast="Decor category archived">Archive</button></div></article>
+      </section>
+
+      <section class="card">
+        <div class="panel-header">
+          <h2 class="card-header">Category Rules</h2>
+          <span class="status-chip active">All active</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Category</th><th>Description</th><th>Items</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Jewelry</strong></td><td>Rings, watches, necklaces and premium pieces</td><td>156</td><td><span class="status-chip active">Active</span></td><td>Jan 15, 2026</td><td><button class="btn btn-secondary" data-toast="Jewelry rule opened">Edit Rule</button></td></tr>
+              <tr><td><strong>Electronics</strong></td><td>Phones, audio, power devices and smart home lots</td><td>342</td><td><span class="status-chip active">Active</span></td><td>Jan 15, 2026</td><td><button class="btn btn-secondary" data-toast="Electronics rule opened">Edit Rule</button></td></tr>
+              <tr><td><strong>Home Decor</strong></td><td>Decorative pieces, furniture, and household items</td><td>278</td><td><span class="status-chip active">Active</span></td><td>Feb 3, 2026</td><td><button class="btn btn-secondary" data-toast="Decor rule opened">Edit Rule</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

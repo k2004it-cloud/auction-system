@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memberships - WooAuctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Primary navigation">
+      <a href="index.html" class="logo">WooAuctions</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse-auctions.html">Auctions</a></li>
+        <li><a href="auction-details.html">Auction Lots</a></li>
+        <li><a href="login.html" class="active">Memberships</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="theme-toggle">
+          <span class="theme-sun" aria-hidden="true"></span>
+          <button class="toggle-track" type="button" aria-label="Toggle dark/light mode" data-theme-toggle></button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container auth-shell" data-tabs>
+    <section class="auth-copy">
+      <span class="eyebrow">Membership Access</span>
+      <h1>Bid faster, track smarter, win with confidence.</h1>
+      <p class="section-copy">Create an account to save watchlists, manage wallet funding, use proxy bidding, and view your winning history.</p>
+      <div class="quick-stats" style="margin-top:1.5rem;">
+        <div><strong>48</strong><span>Live Lots</span></div>
+        <div><strong>1.2k</strong><span>Bids Today</span></div>
+        <div><strong>24/7</strong><span>Monitoring</span></div>
+      </div>
+    </section>
+
+    <section class="auth-container">
+      <div class="auth-form active" id="login-form" data-tab-panel="login">
+        <h2 class="card-header">Login</h2>
+        <form id="loginForm" data-demo-form data-success="Login successful. Welcome back.">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" required placeholder="user@example.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required placeholder="Enter your password">
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:0.5rem;font-weight:500;">
+              <input type="checkbox" style="width:auto;min-height:auto;">
+              Remember me
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Login</button>
+        </form>
+        <div class="form-toggle">
+          New here? <a data-tab-target="register">Create account</a>
+        </div>
+      </div>
+
+      <div class="auth-form" id="register-form" data-tab-panel="register">
+        <h2 class="card-header">Create Account</h2>
+        <form id="registerForm" data-demo-form data-success="Account created. You can now start bidding.">
+          <div class="form-group">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" required placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email Address</label>
+            <input type="email" id="reg-email" required placeholder="user@example.com">
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Phone Number</label>
+            <input type="tel" id="reg-phone" placeholder="+254 700 000 000">
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" required placeholder="Create a password">
+          </div>
+          <div class="form-group">
+            <label for="reg-confirm">Confirm Password</label>
+            <input type="password" id="reg-confirm" required placeholder="Confirm your password">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;">Create Account</button>
+        </form>
+        <div class="form-toggle">
+          Already a member? <a data-tab-target="login">Login</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

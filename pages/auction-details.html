@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auction Lot - WooAuctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Primary navigation">
+      <a href="index.html" class="logo">WooAuctions</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse-auctions.html" class="active">Auctions</a></li>
+        <li><a href="auction-details.html">Auction Lots</a></li>
+        <li><a href="login.html">Memberships</a></li>
+        <li><a href="admin-dashboard.html">Admin</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="theme-toggle">
+          <span class="theme-sun" aria-hidden="true"></span>
+          <button class="toggle-track" type="button" aria-label="Toggle dark/light mode" data-theme-toggle></button>
+        </div>
+        <div class="wallet-chip">
+          <span class="wallet-icon" aria-hidden="true"></span>
+          <span><small>My Wallet</small>Rs 110</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="page-hero">
+      <div>
+        <p class="section-copy"><a href="browse-auctions.html">Auctions</a> / Jewelry / Lot #AU001</p>
+        <h1>Vintage Diamond Ring</h1>
+        <p>Certified 18K gold ring with a 2.5 carat diamond and insured priority delivery.</p>
+      </div>
+      <a href="place-bid.html" class="btn btn-primary">Place Bid</a>
+    </section>
+
+    <section class="details-container">
+      <div>
+        <div class="image-large">
+          <div class="product-jewel" aria-label="Vintage diamond ring product preview"></div>
+        </div>
+        <p class="image-description">High-quality vintage diamond ring, verified by the seller and ready for insured delivery.</p>
+
+        <div data-tabs>
+          <div class="tabs" role="tablist" aria-label="Lot information">
+            <button class="tab-btn active" type="button" data-tab-target="description">Description</button>
+            <button class="tab-btn" type="button" data-tab-target="shipping">Shipping</button>
+            <button class="tab-btn" type="button" data-tab-target="returns">Returns</button>
+          </div>
+
+          <div class="card active" data-tab-panel="description">
+            <h2 class="card-header">Product Description</h2>
+            <p><strong>Condition:</strong> Excellent, minimal wear</p>
+            <p><strong>Material:</strong> 18K yellow gold</p>
+            <p><strong>Gemstone:</strong> 2.5 carat certified diamond</p>
+            <p><strong>Ring Size:</strong> 7</p>
+            <p class="muted">This is a collector-grade ring with strong clarity, clean presentation, and verification documents available after winning.</p>
+          </div>
+
+          <div class="card" data-tab-panel="shipping">
+            <h2 class="card-header">Shipping Information</h2>
+            <p><strong>Method:</strong> Insured priority courier</p>
+            <p><strong>Delivery:</strong> 2-3 business days after payment confirmation</p>
+            <p><strong>Insurance:</strong> Full coverage with signature confirmation</p>
+          </div>
+
+          <div class="card" data-tab-panel="returns">
+            <h2 class="card-header">Returns Policy</h2>
+            <p><strong>Window:</strong> 7 days from receipt</p>
+            <p><strong>Condition:</strong> Item must be returned as received</p>
+            <p><strong>Note:</strong> Returns apply when an item is materially different from the listing.</p>
+          </div>
+        </div>
+
+        <div class="bid-history">
+          <div class="panel-header">
+            <h2 class="section-title">Bid History</h2>
+            <span class="status-chip active">25 bids</span>
+          </div>
+          <div class="bid-entry"><span>User2024</span><strong>Rs 450.00</strong><span class="muted">2 hours ago</span></div>
+          <div class="bid-entry"><span>CollectorPro</span><strong>Rs 425.00</strong><span class="muted">3 hours ago</span></div>
+          <div class="bid-entry"><span>JewelLover</span><strong>Rs 380.00</strong><span class="muted">5 hours ago</span></div>
+          <div class="bid-entry"><span>AuctionFan</span><strong>Rs 350.00</strong><span class="muted">1 day ago</span></div>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="price-box">
+          <div class="price-label">Current Bid</div>
+          <div class="price-value">Rs 450</div>
+          <div>Next minimum bid: Rs 475</div>
+        </div>
+
+        <div class="countdown">
+          Time Remaining<br>
+          <span data-countdown="8100">2h 15m</span>
+        </div>
+
+        <div class="bid-info detail-panel">
+          <div class="bid-info-row"><span>Starting Bid</span><strong>Rs 200</strong></div>
+          <div class="bid-info-row"><span>Reserve Price</span><strong>Not Met</strong></div>
+          <div class="bid-info-row"><span>Bid Increment</span><strong>Rs 25</strong></div>
+          <div class="bid-info-row"><span>Status</span><span class="status-chip active">Live</span></div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-header">Seller</h2>
+          <div style="display:flex; align-items:center; gap:0.8rem;">
+            <span class="user-avatar">JM</span>
+            <div>
+              <strong>JewelryMaster2020</strong>
+              <p class="muted">99.2% positive, 234 ratings</p>
+            </div>
+          </div>
+        </div>
+
+        <a href="place-bid.html" class="btn btn-primary">Place Bid</a>
+        <button class="btn btn-secondary" type="button" data-watch>Watch Auction</button>
+        <button class="btn btn-secondary" type="button" data-toast="Seller contact request prepared">Contact Seller</button>
+      </aside>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

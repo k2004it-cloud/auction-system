@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Place Bid - WooAuctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Primary navigation">
+      <a href="index.html" class="logo">WooAuctions</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse-auctions.html" class="active">Auctions</a></li>
+        <li><a href="auction-details.html">Auction Lots</a></li>
+        <li><a href="login.html">Memberships</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="theme-toggle">
+          <span class="theme-sun" aria-hidden="true"></span>
+          <button class="toggle-track" type="button" aria-label="Toggle dark/light mode" data-theme-toggle></button>
+        </div>
+        <div class="wallet-chip">
+          <span class="wallet-icon" aria-hidden="true"></span>
+          <span><small>My Wallet</small>Rs 110</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="bid-container">
+    <section class="page-hero">
+      <div>
+        <p class="section-copy"><a href="auction-details.html">Lot #AU001</a></p>
+        <h1>Place Your Bid</h1>
+        <p>Choose a manual bid or set a private maximum auto-bid.</p>
+      </div>
+    </section>
+
+    <section class="auction-summary">
+      <div class="summary-image">
+        <div class="product-jewel" style="width:52px;height:52px;" aria-hidden="true"></div>
+      </div>
+      <div>
+        <div class="summary-title">Vintage Diamond Ring</div>
+        <div class="summary-price">Current: Rs 450.00</div>
+        <div class="summary-time">Ends in <span data-countdown="8100">2h 15m</span></div>
+      </div>
+      <a class="btn btn-secondary" href="auction-details.html">View Details</a>
+    </section>
+
+    <div class="info-box">
+      <strong>How bidding works:</strong> If you win, you are obligated to purchase the item. Proxy bidding keeps your maximum bid private.
+    </div>
+
+    <section class="bid-form">
+      <h2 class="card-header">Select Bidding Method</h2>
+      <form id="bidForm" data-bid-form data-minimum="475">
+        <div class="bid-option selected" data-bid-option>
+          <label class="bid-option-label">
+            <input type="radio" name="bid-type" value="manual" checked>
+            <strong>Manual Bid</strong>
+          </label>
+          <p class="bid-option-description">Place one bid now. You will need to bid again if another buyer goes higher.</p>
+          <div class="form-group" style="margin-top:1rem;">
+            <label for="manual-bid">Bid Amount (minimum Rs 475)</label>
+            <input type="number" id="manual-bid" min="475" step="1" placeholder="475">
+          </div>
+        </div>
+
+        <div class="bid-option" data-bid-option>
+          <label class="bid-option-label">
+            <input type="radio" name="bid-type" value="proxy">
+            <strong>Proxy Bidding</strong>
+          </label>
+          <p class="bid-option-description">Set your secret maximum. The system will bid incrementally for you up to that amount.</p>
+          <div class="form-group" style="margin-top:1rem;">
+            <label for="proxy-bid">Maximum Bid Amount</label>
+            <input type="number" id="proxy-bid" min="475" step="1" placeholder="Enter your maximum bid">
+          </div>
+        </div>
+
+        <div class="min-bid-notice">
+          <strong>Minimum bid:</strong> Rs 475. Your available wallet balance is Rs 110, so this prototype will flag wallet funding in the next backend phase.
+        </div>
+
+        <div class="form-group">
+          <label style="display:flex; gap:0.6rem; font-weight:500;">
+            <input type="checkbox" id="agree" required style="width:auto;min-height:auto;">
+            <span>I agree to the bidding terms and understand my purchase obligation if I win.</span>
+          </label>
+        </div>
+
+        <p class="muted" data-bid-preview>Bid preview will appear here.</p>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:1rem;">Place Bid</button>
+      </form>
+    </section>
+
+    <section class="bid-history">
+      <div class="panel-header">
+        <h2 class="section-title">Recent Bids</h2>
+        <span class="status-chip active">Live</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Bidder</th><th>Amount</th><th>Time</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>User2024</td><td>Rs 450.00</td><td>2 hours ago</td></tr>
+            <tr><td>CollectorPro</td><td>Rs 425.00</td><td>3 hours ago</td></tr>
+            <tr><td>JewelLover</td><td>Rs 380.00</td><td>5 hours ago</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

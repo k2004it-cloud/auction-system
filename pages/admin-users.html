@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users - WooAuctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="index.html">WooAuctions Admin</a>
+      <nav class="admin-nav" aria-label="Admin navigation">
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-categories.html">Categories</a>
+        <a href="admin-auctions.html">Manage Auctions</a>
+        <a href="admin-users.html" class="active">Users</a>
+        <a href="index.html">Back to Home</a>
+      </nav>
+    </aside>
+
+    <main class="admin-content" data-search-scope>
+      <section class="admin-header">
+        <div>
+          <h1>Users</h1>
+          <p class="section-copy">Manage bidders, sellers, admins, wallet status, and account health.</p>
+        </div>
+        <button class="btn btn-primary" type="button" data-toast="Add user form prepared">Add User</button>
+      </section>
+
+      <section class="filter-bar" aria-label="User filters">
+        <div class="compact-search">
+          <input type="search" placeholder="Search users..." data-search-input>
+          <button type="button">Search</button>
+        </div>
+        <select data-category-filter aria-label="Filter role">
+          <option value="all">All Roles</option>
+          <option value="buyer">Buyer</option>
+          <option value="seller">Seller</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select data-status-filter aria-label="Filter status">
+          <option value="all">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+        </select>
+        <button class="btn btn-secondary" type="button" data-reset-filters>Reset</button>
+      </section>
+
+      <section class="card">
+        <div class="panel-header">
+          <h2 class="card-header">All Users</h2>
+          <span class="result-count" data-result-count>0 results</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Wallet</th><th>Status</th><th>Auctions</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr data-table-row data-category="buyer" data-status="active"><td>#U001</td><td><span class="user-avatar">JD</span>John Doe</td><td>john@example.com</td><td><span class="role-chip buyer">Buyer</span></td><td>Rs 110</td><td><span class="status-chip active">Active</span></td><td>15</td><td><div class="action-buttons"><button class="icon-btn" data-toast="Viewing John Doe">View</button><button class="icon-btn" data-toast="Editing John Doe">Edit</button></div></td></tr>
+              <tr data-table-row data-category="seller" data-status="active"><td>#U002</td><td><span class="user-avatar">JM</span>Jane Miller</td><td>jane@example.com</td><td><span class="role-chip seller">Seller</span></td><td>Rs 8,420</td><td><span class="status-chip active">Active</span></td><td>42</td><td><div class="action-buttons"><button class="icon-btn" data-toast="Viewing Jane Miller">View</button><button class="icon-btn" data-toast="Editing Jane Miller">Edit</button></div></td></tr>
+              <tr data-table-row data-category="admin" data-status="active"><td>#U003</td><td><span class="user-avatar">RJ</span>Robert Johnson</td><td>robert@example.com</td><td><span class="role-chip admin">Admin</span></td><td>Rs 0</td><td><span class="status-chip active">Active</span></td><td>0</td><td><div class="action-buttons"><button class="icon-btn" data-toast="Viewing Robert Johnson">View</button><button class="icon-btn" data-toast="Editing Robert Johnson">Edit</button></div></td></tr>
+              <tr data-table-row data-category="buyer" data-status="suspended"><td>#U004</td><td><span class="user-avatar">ML</span>Maria Lopez</td><td>maria@example.com</td><td><span class="role-chip buyer">Buyer</span></td><td>Rs 540</td><td><span class="status-chip closed">Suspended</span></td><td>8</td><td><div class="action-buttons"><button class="icon-btn" data-toast="Viewing Maria Lopez">View</button><button class="icon-btn" data-toast="Maria reactivation queued">Reactivate</button></div></td></tr>
+              <tr data-table-row data-category="seller" data-status="active"><td>#U005</td><td><span class="user-avatar">AS</span>Ahmed Smith</td><td>ahmed@example.com</td><td><span class="role-chip seller">Seller</span></td><td>Rs 3,210</td><td><span class="status-chip active">Active</span></td><td>27</td><td><div class="action-buttons"><button class="icon-btn" data-toast="Viewing Ahmed Smith">View</button><button class="icon-btn" data-toast="Editing Ahmed Smith">Edit</button></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

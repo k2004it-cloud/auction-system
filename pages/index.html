@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WooAuctions - Live Auctions</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Primary navigation">
+      <a href="index.html" class="logo">WooAuctions</a>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="browse-auctions.html" class="active">Auctions</a></li>
+        <li><a href="auction-details.html">Auction Lots</a></li>
+        <li><a href="login.html">Memberships</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <div class="theme-toggle" title="Toggle dark/light mode">
+          <span class="theme-sun" aria-hidden="true"></span>
+          <button class="toggle-track" type="button" aria-label="Toggle dark/light mode" data-theme-toggle></button>
+        </div>
+        <div class="wallet-chip" aria-label="Wallet balance">
+          <span class="wallet-icon" aria-hidden="true"></span>
+          <span><small>My Wallet</small>Rs 110</span>
+        </div>
+        <div class="avatar-ring" aria-label="User profile"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="auction-home">
+    <section class="hero container">
+      <h1>Live Auctions</h1>
+      <p>Browse and bid on active auctions</p>
+
+      <div class="hero-panel" aria-label="Auction discovery tools">
+        <form class="hero-search" role="search" action="browse-auctions.html">
+          <label class="sr-only" for="auction-search">Search live auctions</label>
+          <span class="search-icon" aria-hidden="true"></span>
+          <input id="auction-search" type="search" placeholder="Search items, categories, or auction lots">
+          <button type="submit">Search</button>
+        </form>
+
+        <div class="hero-insights">
+          <div class="featured-countdown">
+            <div>
+              <span class="eyebrow">Featured Live Lot</span>
+              <strong>Powerbank 20,000 mAh</strong>
+            </div>
+            <div class="mini-countdown" aria-label="Featured lot ends in 7 days, 3 hours, 36 minutes">
+              <span><strong>07</strong>Days</span>
+              <span><strong>03</strong>Hours</span>
+              <span><strong>36</strong>Mins</span>
+            </div>
+          </div>
+
+          <div class="quick-stats" aria-label="Auction statistics">
+            <div><strong>48</strong><span>Live Lots</span></div>
+            <div><strong>1.2k</strong><span>Active Bids</span></div>
+            <div><strong>Rs 110</strong><span>Wallet</span></div>
+          </div>
+        </div>
+
+        <div class="trending-categories" aria-label="Trending categories">
+          <span>Trending</span>
+          <a href="browse-auctions.html">Electronics</a>
+          <a href="browse-auctions.html">Home Decor</a>
+          <a href="browse-auctions.html">Members Only</a>
+          <a href="browse-auctions.html">Sealed Lots</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="container" aria-labelledby="auction-filter-heading">
+      <h2 id="auction-filter-heading" class="sr-only">Auction status filters</h2>
+      <div class="auction-hero-controls" role="tablist" aria-label="Auction status">
+        <button class="pill active" type="button" role="tab" aria-selected="true">Live</button>
+        <button class="pill" type="button" role="tab" aria-selected="false">Scheduled</button>
+        <button class="pill" type="button" role="tab" aria-selected="false">Ended</button>
+      </div>
+
+      <div class="auction-grid">
+        <article class="auction-card">
+          <div class="auction-image" aria-label="Vintage home decor product preview">
+            <span class="status-badge live">Live</span>
+            <div class="product-art owl" aria-hidden="true"></div>
+          </div>
+          <div class="price-bar">Bidding starts at Rs 1.00</div>
+          <div class="auction-info">
+            <div class="title-row">
+              <h3 class="auction-title">Vintage Home Decor</h3>
+              <span class="auction-category">Members Only</span>
+            </div>
+            <div class="timer-grid" aria-label="6 days, 22 hours, 6 minutes, 50 seconds remaining">
+              <div class="timer-box"><div class="num">06</div><div class="label">Days</div></div>
+              <div class="timer-box"><div class="num">22</div><div class="label">Hours</div></div>
+              <div class="timer-box"><div class="num">06</div><div class="label">Mins</div></div>
+              <div class="timer-box"><div class="num">50</div><div class="label">Secs</div></div>
+            </div>
+            <div class="card-footer">
+              <button class="watch-btn" type="button" aria-label="Add Vintage Home Decor to watchlist" data-watch>&hearts;</button>
+              <button class="place-bid" type="button">Place Bid</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="auction-card">
+          <div class="auction-image" aria-label="TWS earbuds product preview">
+            <span class="status-badge sealed">Sealed</span>
+            <span class="status-badge live">Live</span>
+            <div class="product-art earbuds" aria-hidden="true"></div>
+          </div>
+          <div class="price-bar">Bidding starts at Rs 1.00</div>
+          <div class="auction-info">
+            <div class="title-row">
+              <h3 class="auction-title">TWS Earbuds</h3>
+            </div>
+            <div class="timer-grid" aria-label="7 days, 3 hours, 36 minutes, 50 seconds remaining">
+              <div class="timer-box"><div class="num">07</div><div class="label">Days</div></div>
+              <div class="timer-box"><div class="num">03</div><div class="label">Hours</div></div>
+              <div class="timer-box"><div class="num">36</div><div class="label">Mins</div></div>
+              <div class="timer-box"><div class="num">50</div><div class="label">Secs</div></div>
+            </div>
+            <div class="card-footer">
+              <button class="watch-btn" type="button" aria-label="Add TWS Earbuds to watchlist" data-watch>&hearts;</button>
+              <button class="place-bid" type="button">Place Bid</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="auction-card">
+          <div class="auction-image" aria-label="Powerbank product preview">
+            <span class="status-badge live">Live</span>
+            <div class="product-art powerbank" aria-hidden="true"></div>
+          </div>
+          <div class="price-bar winning">You are winning for Rs 499.00</div>
+          <div class="auction-info">
+            <div class="title-row">
+              <h3 class="auction-title">Powerbank 20,000 mAh</h3>
+            </div>
+            <div class="timer-grid" aria-label="7 days, 3 hours, 36 minutes, 50 seconds remaining">
+              <div class="timer-box"><div class="num">07</div><div class="label">Days</div></div>
+              <div class="timer-box"><div class="num">03</div><div class="label">Hours</div></div>
+              <div class="timer-box"><div class="num">36</div><div class="label">Mins</div></div>
+              <div class="timer-box"><div class="num">50</div><div class="label">Secs</div></div>
+            </div>
+            <div class="card-footer">
+              <button class="watch-btn" type="button" aria-label="Add Powerbank to watchlist" data-watch>&hearts;</button>
+              <button class="place-bid" type="button">Place Bid</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="auction-card">
+          <div class="auction-image" aria-label="Eco Dot combo product preview">
+            <span class="status-badge live">Live</span>
+            <div class="product-art microwave" aria-hidden="true"></div>
+          </div>
+          <div class="price-bar">Bidding starts at Rs 1.00</div>
+          <div class="auction-info">
+            <div class="title-row">
+              <h3 class="auction-title">Eco Dot Combo</h3>
+            </div>
+            <div class="timer-grid" aria-label="27 days, 15 hours, 54 minutes, 50 seconds remaining">
+              <div class="timer-box"><div class="num">27</div><div class="label">Days</div></div>
+              <div class="timer-box"><div class="num">15</div><div class="label">Hours</div></div>
+              <div class="timer-box"><div class="num">54</div><div class="label">Mins</div></div>
+              <div class="timer-box"><div class="num">50</div><div class="label">Secs</div></div>
+            </div>
+            <div class="card-footer">
+              <button class="watch-btn" type="button" aria-label="Add Eco Dot Combo to watchlist" data-watch>&hearts;</button>
+              <button class="place-bid" type="button">Place Bid</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

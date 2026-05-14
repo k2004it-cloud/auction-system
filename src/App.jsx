@@ -1,0 +1,1952 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { io } from "socket.io-client";
+import { isSupabaseConfigured, supabase } from "./lib/supabaseClient";
+import {
+  Activity,
+  ArrowLeft,
+  BadgeCheck,
+  Bell,
+  Bot,
+  BriefcaseBusiness,
+  Building2,
+  Camera,
+  Car,
+  CheckCircle2,
+  ChevronRight,
+  Chrome,
+  ClipboardCheck,
+  CreditCard,
+  Crown,
+  Eye,
+  EyeOff,
+  Filter,
+  Gavel,
+  Github,
+  Heart,
+  Home,
+  ImagePlus,
+  KeyRound,
+  LineChart,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  Menu,
+  MessageCircle,
+  Moon,
+  PackageCheck,
+  Phone,
+  Search,
+  Send,
+  ShieldAlert,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Timer,
+  TrendingUp,
+  User,
+  UserPlus,
+  UsersRound,
+  Wallet,
+  X,
+  XCircle,
+  Zap
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
+
+const initialAuctions = [
+  {
+    id: "AU-901",
+    title: "Tesla Model X Performance",
+    category: "Vehicles",
+    seller: "Elite Motors",
+    bid: 8240000,
+    reserve: 9000000,
+    bids: 148,
+    watchers: 394,
+    progress: 78,
+    time: "02h 14m",
+    location: "Nairobi",
+    image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=900&q=80",
+    accent: "from-blue-premium/40 to-green-success/20",
+    specs: ["2023 model", "Performance trim", "Verified logbook", "Battery health report"],
+    inspection: "Vehicle has passed identity, logbook, and condition checks.",
+    payment: "10% deposit hold, balance via bank transfer or verified M-Pesa split payment.",
+    status: "approved",
+    cameraAvailable: true,
+    approvalNote: "Approved after ownership and condition checks."
+  },
+  {
+    id: "AU-778",
+    title: "Rolex Submariner Date",
+    category: "Luxury",
+    seller: "Crown Vault",
+    bid: 1850000,
+    reserve: 2100000,
+    bids: 96,
+    watchers: 211,
+    progress: 64,
+    time: "05h 31m",
+    location: "Westlands",
+    image: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=900&q=80",
+    accent: "from-gold/35 to-orange-cta/20",
+    specs: ["Authenticated serial", "Box and papers", "Escrow eligible", "Insured courier"],
+    inspection: "Authentication documents and condition photographs reviewed by admin.",
+    payment: "Wallet hold accepted. Escrow release after buyer confirmation.",
+    status: "approved",
+    cameraAvailable: true,
+    approvalNote: "Serial, papers, and photo evidence verified."
+  },
+  {
+    id: "AU-602",
+    title: "MacBook Pro Studio Kit",
+    category: "Electronics",
+    seller: "Nairobi Tech Hub",
+    bid: 342000,
+    reserve: 390000,
+    bids: 72,
+    watchers: 168,
+    progress: 52,
+    time: "11h 08m",
+    location: "Kilimani",
+    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80",
+    accent: "from-blue-premium/35 to-gold/15",
+    specs: ["M3 Max", "64GB RAM", "Studio display", "Warranty valid"],
+    inspection: "Serial number, battery cycle count, and warranty status verified.",
+    payment: "M-Pesa STK push, card, and wallet balance supported.",
+    status: "approved",
+    cameraAvailable: true,
+    approvalNote: "Device serial and warranty reviewed."
+  },
+  {
+    id: "AU-411",
+    title: "Oceanfront Property Lot",
+    category: "Property",
+    seller: "Prime Estates",
+    bid: 18400000,
+    reserve: 22000000,
+    bids: 41,
+    watchers: 132,
+    progress: 45,
+    time: "1d 03h",
+    location: "Diani",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80",
+    accent: "from-green-success/30 to-blue-premium/20",
+    specs: ["Beach access", "Title deed review", "0.8 acres", "Survey map attached"],
+    inspection: "Ownership documents, survey details, and seller KYC are under admin review.",
+    payment: "Deposit via escrow. Completion through advocate-managed settlement.",
+    status: "approved",
+    cameraAvailable: false,
+    approvalNote: "Document review completed before listing."
+  }
+];
+
+const initialPendingLots = [
+  {
+    id: "AU-1007",
+    title: "Canon EOS R6 Creator Bundle",
+    category: "Electronics",
+    seller: "Auctioneer Jane",
+    bid: 185000,
+    reserve: 230000,
+    bids: 0,
+    watchers: 18,
+    progress: 18,
+    time: "Pending",
+    location: "Nakuru",
+    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80",
+    accent: "from-green-success/30 to-gold/20",
+    specs: ["Camera body", "24-105mm lens", "Receipt uploaded", "Condition photos attached"],
+    inspection: "Waiting for admin approval of uploaded proof, photos, and reserve price.",
+    payment: "Wallet hold and M-Pesa deposit supported after approval.",
+    status: "pending",
+    cameraAvailable: true,
+    approvalNote: "Needs admin review before bidders can see it."
+  },
+  {
+    id: "AU-1008",
+    title: "Toyota Hilux Workmate",
+    category: "Vehicles",
+    seller: "Rift Valley Auctioneers",
+    bid: 2650000,
+    reserve: 3100000,
+    bids: 0,
+    watchers: 27,
+    progress: 22,
+    time: "Pending",
+    location: "Eldoret",
+    image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=900&q=80",
+    accent: "from-blue-premium/35 to-orange-cta/20",
+    specs: ["Logbook uploaded", "Inspection report", "Mileage photos", "Seller KYC pending"],
+    inspection: "Admin should confirm seller KYC, logbook ownership, and condition photos.",
+    payment: "Deposit rules become active after approval.",
+    status: "pending",
+    cameraAvailable: false,
+    approvalNote: "KYC and document review pending."
+  }
+];
+
+const chartData = [
+  { name: "Mon", bids: 120, revenue: 34 },
+  { name: "Tue", bids: 210, revenue: 52 },
+  { name: "Wed", bids: 180, revenue: 49 },
+  { name: "Thu", bids: 310, revenue: 81 },
+  { name: "Fri", bids: 420, revenue: 96 },
+  { name: "Sat", bids: 390, revenue: 88 },
+  { name: "Sun", bids: 510, revenue: 132 }
+];
+
+const activity = [
+  ["New bid", "AU-901 increased by KES 120,000", "now"],
+  ["Wallet funded", "M-Pesa STK push confirmed", "2m"],
+  ["Auto-bid", "Proxy bid protected bidder K-448", "5m"],
+  ["Fraud check", "Seller verification passed", "9m"]
+];
+
+const navItems = [
+  ["home", "Home"],
+  ["auctions", "Auctions"],
+  ["sell", "Auctioneer Upload"],
+  ["vehicles", "Vehicles"],
+  ["property", "Property"],
+  ["dashboard", "Dashboard"],
+  ["admin", "Admin"],
+  ["payments", "Payments"],
+  ["login", "Sign In"],
+  ["support", "AI Care"]
+];
+
+const formatKes = (value) =>
+  new Intl.NumberFormat("en-KE", {
+    style: "currency",
+    currency: "KES",
+    maximumFractionDigits: 0
+  }).format(value);
+
+const loadStoredLots = (key, fallback) => {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+function useSocketStatus() {
+  const [status, setStatus] = useState("Mock realtime");
+
+  useEffect(() => {
+    const url = import.meta.env.VITE_SOCKET_URL;
+    if (!url) return;
+    const socket = io(url, { transports: ["websocket"], autoConnect: true });
+    socket.on("connect", () => setStatus("Socket.IO live"));
+    socket.on("disconnect", () => setStatus("Reconnecting"));
+    socket.on("connect_error", () => setStatus("Backend offline"));
+    return () => socket.disconnect();
+  }, []);
+
+  return status;
+}
+
+function useRoute() {
+  const getRoute = () => window.location.hash.replace("#", "") || "home";
+  const [route, setRoute] = useState(getRoute);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      setRoute(getRoute());
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  return route;
+}
+
+function Navbar({ route }) {
+  const [open, setOpen] = useState(false);
+  const openAiHub = () => {
+    window.dispatchEvent(new Event("woo-open-ai-hub"));
+    setOpen(false);
+  };
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-midnight/80 backdrop-blur-2xl">
+      <div className="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <a href="#home" className="flex items-center gap-3">
+          <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-gold to-orange-cta text-slate-950 shadow-gold">
+            <Gavel size={22} />
+          </div>
+          <span className="font-display text-xl font-black tracking-tight">WooAuctions</span>
+        </a>
+
+        <nav className="ml-6 hidden items-center gap-1 lg:flex">
+          {navItems.map(([key, label]) => key === "support" ? (
+            <button
+              key={key}
+              type="button"
+              onClick={openAiHub}
+              className="inline-flex items-center gap-2 rounded-2xl border-0 bg-transparent px-4 py-2 text-sm font-bold text-mist transition hover:bg-white/10 hover:text-white"
+            >
+              <Bot size={16} />
+              {label}
+            </button>
+          ) : (
+            <a
+              key={key}
+              href={`#${key}`}
+              className={`rounded-2xl px-4 py-2 text-sm font-bold transition ${route === key ? "bg-white/10 text-white" : "text-mist hover:bg-white/10 hover:text-white"}`}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="ml-auto hidden min-w-72 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-mist xl:flex">
+          <Search size={18} />
+          <input className="w-full bg-transparent text-sm outline-none placeholder:text-mist" placeholder="Search auctions, sellers, lot IDs..." />
+        </div>
+
+        <a href="#notifications" className="relative grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/5 transition hover:bg-white/10" aria-label="Notifications">
+          <Bell size={18} />
+          <span className="absolute right-2 top-2 size-2 rounded-full bg-orange-cta shadow-gold" />
+        </a>
+
+        <a href="#payments" className="hidden items-center gap-2 rounded-2xl border border-gold/20 bg-gold/10 px-3 py-2 text-sm font-black text-gold sm:flex">
+          <Wallet size={18} />
+          KES 110,240
+        </a>
+
+        <button className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/5" aria-label="Toggle theme">
+          <Moon size={18} />
+        </button>
+
+        <a href="#dashboard" className="hidden size-11 place-items-center rounded-2xl bg-gradient-to-br from-blue-premium to-gold font-black sm:grid">
+          TP
+        </a>
+
+        <button className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/5 lg:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
+          {open ? <X size={18} /> : <Menu size={18} />}
+        </button>
+      </div>
+
+      {open && (
+        <div className="border-t border-white/10 bg-midnight/95 px-4 py-4 lg:hidden">
+          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-mist">
+            <Search size={18} />
+            <input className="w-full bg-transparent outline-none" placeholder="Search auctions..." />
+          </div>
+          <div className="grid gap-2">
+            {navItems.map(([key, label]) => key === "support" ? (
+              <button
+                key={key}
+                type="button"
+                onClick={openAiHub}
+                className="inline-flex items-center gap-2 rounded-2xl border-0 bg-transparent px-4 py-3 text-left font-bold text-mist hover:bg-white/10 hover:text-white"
+              >
+                <Bot size={16} />
+                {label}
+              </button>
+            ) : (
+              <a key={key} href={`#${key}`} onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 font-bold text-mist hover:bg-white/10 hover:text-white">
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div className="text-xs font-bold uppercase text-mist">{label}</div>
+      <div className="mt-1 font-display text-lg font-black text-snow">{value}</div>
+    </div>
+  );
+}
+
+function PageHeader({ eyebrow, title, copy, action }) {
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+        <div>
+          {eyebrow && <div className="chip mb-4"><Sparkles size={15} /> {eyebrow}</div>}
+          <h1 className="font-display text-4xl font-black leading-tight sm:text-5xl">{title}</h1>
+          <p className="mt-4 max-w-3xl text-lg leading-8 text-mist">{copy}</p>
+        </div>
+        {action}
+      </div>
+    </section>
+  );
+}
+
+const authModes = {
+  login: {
+    eyebrow: "Enterprise Access",
+    title: "Welcome back to the auction floor.",
+    copy: "Sign in to manage live bids, escrow-ready payments, watchlists, seller approvals, and executive auction intelligence."
+  },
+  register: {
+    eyebrow: "Create Secure Access",
+    title: "Join a premium auction network.",
+    copy: "Open a verified account for bidders, auctioneers, and admins with role-based access and fraud-aware workflows."
+  },
+  forgot: {
+    eyebrow: "Credential Recovery",
+    title: "Restore access without losing momentum.",
+    copy: "Request a secure reset, verify the recovery code, and create a new password inside a protected flow."
+  },
+  otp: {
+    eyebrow: "Verification Layer",
+    title: "Confirm the code sent to your inbox.",
+    copy: "Finish identity verification before entering high-value auctions, wallet funding, and admin workspaces."
+  }
+};
+
+const authHighlights = [
+  ["KES 42M", "daily auction volume"],
+  ["99.8%", "realtime bid uptime"],
+  ["24/7", "risk and wallet monitoring"]
+];
+
+const roleOptions = [
+  ["buyer", "Buyer", User],
+  ["auctioneer", "Auctioneer", Gavel],
+  ["admin", "Admin", ShieldCheck]
+];
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const wait = (ms = 760) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+function AuthToastStack({ items }) {
+  return (
+    <div className="fixed right-4 top-4 z-[120] grid w-[min(22rem,calc(100vw-2rem))] gap-3">
+      {items.map((item) => (
+        <motion.div
+          key={item.id}
+          initial={{ opacity: 0, y: -12, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -12, scale: 0.96 }}
+          className={`rounded-2xl border p-4 text-sm font-bold shadow-glass backdrop-blur-xl ${item.type === "error" ? "border-red-400/30 bg-red-500/10 text-red-100" : "border-green-success/30 bg-green-success/10 text-green-100"}`}
+        >
+          {item.text}
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function AuthInput({ icon: Icon, label, error, action, className = "", ...props }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-2 block text-sm font-bold text-snow">{label}</span>
+      <span className={`flex min-h-14 items-center gap-3 rounded-2xl border bg-white/[0.045] px-4 transition focus-within:border-gold/70 focus-within:bg-white/[0.07] focus-within:shadow-gold ${error ? "border-red-400/50" : "border-white/10"}`}>
+        <Icon size={18} className={error ? "text-red-200" : "text-mist"} />
+        <input
+          {...props}
+          className="min-w-0 flex-1 border-0 bg-transparent py-4 text-sm font-semibold text-snow outline-none placeholder:text-mist"
+        />
+        {action}
+      </span>
+      {error && <span className="mt-2 block text-xs font-bold text-red-200">{error}</span>}
+    </label>
+  );
+}
+
+function AuthButton({ loading, children }) {
+  return (
+    <button
+      type="submit"
+      disabled={loading}
+      className="group relative mt-2 inline-flex min-h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-premium via-green-success to-gold px-5 font-black text-slate-950 shadow-glow transition duration-300 hover:-translate-y-0.5 hover:shadow-gold disabled:cursor-not-allowed disabled:opacity-75"
+    >
+      <span className="absolute inset-0 translate-x-[-110%] bg-white/35 transition duration-700 group-hover:translate-x-[110%]" />
+      {loading ? <Loader2 size={20} className="relative animate-spin" /> : <Zap size={19} className="relative" />}
+      <span className="relative">{children}</span>
+    </button>
+  );
+}
+
+function AuthBrandPanel({ mode }) {
+  const copy = authModes[mode];
+
+  return (
+    <motion.aside
+      initial={{ opacity: 0, x: -26 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.7 }}
+      className="relative isolate flex min-h-[32rem] overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-glass backdrop-blur-2xl lg:min-h-[calc(100vh-3rem)] lg:p-8"
+    >
+      <div className="absolute -left-24 top-20 size-72 rounded-full bg-blue-premium/35 blur-3xl" />
+      <div className="absolute bottom-10 right-0 size-80 rounded-full bg-gold/20 blur-3xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_15%,rgba(16,185,129,0.18),transparent_26rem)]" />
+      <img
+        className="absolute inset-0 -z-10 h-full w-full object-cover opacity-20 mix-blend-screen"
+        src="https://images.unsplash.com/photo-1642052502780-8ee67e3ed5e2?auto=format&fit=crop&w=1300&q=80"
+        alt="Premium auction authentication backdrop"
+      />
+
+      <div className="relative z-10 flex w-full flex-col justify-between gap-10">
+        <div>
+          <a href="#home" className="inline-flex items-center gap-3">
+            <span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-gold to-green-success text-slate-950 shadow-gold">
+              <Gavel size={24} />
+            </span>
+            <span>
+              <span className="block font-display text-2xl font-black">WooAuctions</span>
+              <span className="text-xs font-bold uppercase tracking-[0.22em] text-mist">Enterprise Auction OS</span>
+            </span>
+          </a>
+
+          <div className="mt-12 max-w-2xl">
+            <div className="chip mb-5 border-gold/20 bg-gold/10 text-gold"><Sparkles size={15} /> {copy.eyebrow}</div>
+            <h1 className="font-display text-4xl font-black leading-[0.98] text-snow sm:text-5xl xl:text-6xl">{copy.title}</h1>
+            <p className="mt-5 max-w-xl text-base leading-8 text-mist sm:text-lg">{copy.copy}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="max-w-xl rounded-[1.7rem] border border-white/10 bg-midnight/70 p-4 shadow-glass backdrop-blur-2xl"
+          >
+            <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+              <img
+                className="h-32 w-full rounded-2xl object-cover"
+                src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?auto=format&fit=crop&w=700&q=80"
+                alt="Luxury watch auction preview"
+              />
+              <div>
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <span className="chip live-pulse bg-green-success/10">Live</span>
+                  <span className="chip bg-blue-premium/15 text-snow">Escrow ready</span>
+                </div>
+                <h2 className="font-display text-xl font-black">Rolex Submariner Date</h2>
+                <p className="mt-1 text-sm text-mist">Authenticated luxury lot with wallet holds and fraud monitoring.</p>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full w-[68%] rounded-full bg-gradient-to-r from-blue-premium via-green-success to-gold" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {authHighlights.map(([value, label]) => (
+              <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-xl">
+                <div className="font-display text-2xl font-black text-gold">{value}</div>
+                <div className="mt-1 text-xs font-bold uppercase text-mist">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.aside>
+  );
+}
+
+function AuthPage({ mode }) {
+  const [form, setForm] = useState({
+    fullName: "",
+    email: localStorage.getItem("woo-auth-email") || "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    role: "buyer",
+    remember: true,
+    otp: "",
+    resetPassword: "",
+    resetConfirm: ""
+  });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [toasts, setToasts] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [forgotStep, setForgotStep] = useState("email");
+
+  const isForgot = mode === "forgot";
+  const isOtp = mode === "otp";
+  const cardTitle = mode === "login" ? "Sign in securely" : mode === "register" ? "Create your account" : mode === "otp" ? "Verify OTP code" : "Reset your password";
+
+  const update = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: undefined, form: undefined }));
+  };
+
+  const pushToast = (text, type = "success") => {
+    const id = crypto.randomUUID();
+    setToasts((current) => [...current, { id, text, type }].slice(-3));
+    window.setTimeout(() => setToasts((current) => current.filter((item) => item.id !== id)), 3600);
+  };
+
+  const validateEmail = () => {
+    if (!form.email.trim()) return "Email is required";
+    if (!emailPattern.test(form.email)) return "Enter a valid business email";
+    return "";
+  };
+
+  const validatePassword = (field = "password") => {
+    const value = form[field];
+    if (!value) return "Password is required";
+    if (value.length < 8) return "Use at least 8 characters";
+    return "";
+  };
+
+  const runAuth = async (event) => {
+    event.preventDefault();
+    const nextErrors = {};
+
+    if (mode === "login") {
+      nextErrors.email = validateEmail();
+      nextErrors.password = validatePassword();
+    }
+
+    if (mode === "register") {
+      if (!form.fullName.trim()) nextErrors.fullName = "Full name is required";
+      nextErrors.email = validateEmail();
+      if (!form.phone.trim()) nextErrors.phone = "Phone number is required";
+      nextErrors.password = validatePassword();
+      if (form.password !== form.confirmPassword) nextErrors.confirmPassword = "Passwords must match";
+    }
+
+    if (mode === "otp") {
+      nextErrors.email = validateEmail();
+      if (!/^\d{6}$/.test(form.otp)) nextErrors.otp = "Enter the 6 digit verification code";
+    }
+
+    if (isForgot) {
+      if (forgotStep === "email") nextErrors.email = validateEmail();
+      if (forgotStep === "otp" && !/^\d{6}$/.test(form.otp)) nextErrors.otp = "Enter the 6 digit recovery code";
+      if (forgotStep === "reset") {
+        nextErrors.resetPassword = validatePassword("resetPassword");
+        if (form.resetPassword !== form.resetConfirm) nextErrors.resetConfirm = "Passwords must match";
+      }
+    }
+
+    Object.keys(nextErrors).forEach((key) => {
+      if (!nextErrors[key]) delete nextErrors[key];
+    });
+
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      pushToast("Please fix the highlighted fields.", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (mode === "login") {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password });
+          if (error) throw error;
+        } else {
+          await wait();
+        }
+        localStorage.setItem("woo-auth-email", form.email);
+        pushToast(isSupabaseConfigured ? "Signed in successfully." : "Demo sign in successful. Add Supabase env keys for live auth.");
+        window.setTimeout(() => { window.location.hash = "dashboard"; }, 700);
+      }
+
+      if (mode === "register") {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.auth.signUp({
+            email: form.email,
+            password: form.password,
+            options: {
+              data: {
+                full_name: form.fullName,
+                phone: form.phone,
+                role: form.role
+              }
+            }
+          });
+          if (error) throw error;
+        } else {
+          await wait();
+        }
+        localStorage.setItem("woo-auth-email", form.email);
+        pushToast("Account created. Verify your OTP to finish setup.");
+        window.setTimeout(() => { window.location.hash = "otp-verification"; }, 650);
+      }
+
+      if (mode === "otp") {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.auth.verifyOtp({ email: form.email, token: form.otp, type: "signup" });
+          if (error) throw error;
+        } else {
+          await wait();
+        }
+        pushToast("OTP verified. Welcome to WooAuctions.");
+        window.setTimeout(() => { window.location.hash = "dashboard"; }, 650);
+      }
+
+      if (isForgot && forgotStep === "email") {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
+            redirectTo: `${window.location.origin}/#forgot-password`
+          });
+          if (error) throw error;
+        } else {
+          await wait();
+        }
+        localStorage.setItem("woo-auth-email", form.email);
+        setForgotStep("otp");
+        pushToast("Reset code sent. Enter the OTP from your email.");
+      } else if (isForgot && forgotStep === "otp") {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.auth.verifyOtp({ email: form.email, token: form.otp, type: "recovery" });
+          if (error) throw error;
+        } else {
+          await wait();
+        }
+        setForgotStep("reset");
+        pushToast("Code verified. Set a new password.");
+      } else if (isForgot && forgotStep === "reset") {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.auth.updateUser({ password: form.resetPassword });
+          if (error) throw error;
+        } else {
+          await wait();
+        }
+        pushToast("Password reset complete. You can sign in now.");
+        window.setTimeout(() => { window.location.hash = "login"; }, 650);
+      }
+    } catch (error) {
+      pushToast(error.message || "Authentication failed. Try again.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const socialLogin = async (provider) => {
+    setLoading(true);
+    try {
+      if (isSupabaseConfigured) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo: window.location.origin }
+        });
+        if (error) throw error;
+      } else {
+        await wait(580);
+        pushToast(`${provider === "google" ? "Google" : "GitHub"} demo login ready. Configure Supabase env keys for OAuth.`);
+      }
+    } catch (error) {
+      pushToast(error.message || "Social login failed.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const passwordAction = (
+    <button type="button" onClick={() => setShowPassword((value) => !value)} className="text-mist transition hover:text-snow" aria-label={showPassword ? "Hide password" : "Show password"}>
+      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+    </button>
+  );
+
+  const confirmAction = (
+    <button type="button" onClick={() => setShowConfirm((value) => !value)} className="text-mist transition hover:text-snow" aria-label={showConfirm ? "Hide password" : "Show password"}>
+      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+    </button>
+  );
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-midnight px-4 py-4 text-snow sm:px-6 lg:px-8">
+      <AuthToastStack items={toasts} />
+      <div className="absolute left-[-8rem] top-[-8rem] size-96 rounded-full bg-blue-premium/20 blur-3xl" />
+      <div className="absolute bottom-[-10rem] right-[-6rem] size-[28rem] rounded-full bg-gold/15 blur-3xl" />
+      <div className="relative mx-auto grid max-w-7xl gap-5 lg:grid-cols-[1.04fr_0.96fr]">
+        <AuthBrandPanel mode={mode} />
+
+        <section className="flex min-h-[calc(100vh-2rem)] items-center justify-center py-4">
+          <motion.div
+            key={`${mode}-${forgotStep}`}
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-panel/75 p-5 shadow-glass backdrop-blur-2xl sm:p-7"
+          >
+            <div className="mb-7 flex items-center justify-between gap-4">
+              <a href="#home" className="inline-flex items-center gap-2 text-sm font-bold text-mist transition hover:text-snow">
+                <ArrowLeft size={16} />
+                Marketplace
+              </a>
+              <span className={`rounded-full border px-3 py-1 text-xs font-black ${isSupabaseConfigured ? "border-green-success/30 bg-green-success/10 text-green-success" : "border-gold/30 bg-gold/10 text-gold"}`}>
+                {isSupabaseConfigured ? "Supabase live" : "Demo auth"}
+              </span>
+            </div>
+
+            <div className="mb-7">
+              <div className="chip mb-4 border-blue-premium/25 bg-blue-premium/10 text-snow"><ShieldCheck size={15} /> Bank-grade session security</div>
+              <h2 className="font-display text-3xl font-black sm:text-4xl">{cardTitle}</h2>
+              <p className="mt-3 text-sm leading-6 text-mist">
+                {isForgot && forgotStep === "otp" ? "Enter the recovery OTP sent to your inbox." : isForgot && forgotStep === "reset" ? "Create a fresh password for your WooAuctions account." : authModes[mode].copy}
+              </p>
+            </div>
+
+            <form onSubmit={runAuth} className="grid gap-4">
+              {mode === "register" && (
+                <AuthInput icon={UserPlus} label="Full name" value={form.fullName} onChange={(event) => update("fullName", event.target.value)} placeholder="Amina Mwangi" error={errors.fullName} />
+              )}
+
+              {(mode !== "forgot" || forgotStep !== "reset") && (
+                <AuthInput icon={Mail} label="Email address" type="email" value={form.email} onChange={(event) => update("email", event.target.value)} placeholder="you@company.com" error={errors.email} />
+              )}
+
+              {mode === "register" && (
+                <AuthInput icon={Phone} label="Phone number" value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="+254 700 000 000" error={errors.phone} />
+              )}
+
+              {mode === "register" && (
+                <div>
+                  <span className="mb-2 block text-sm font-bold text-snow">Role selection</span>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {roleOptions.map(([key, label, Icon]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => update("role", key)}
+                        className={`flex min-h-14 items-center justify-center gap-2 rounded-2xl border px-3 text-sm font-black transition ${form.role === key ? "border-gold/50 bg-gold/15 text-gold shadow-gold" : "border-white/10 bg-white/[0.045] text-mist hover:bg-white/[0.075] hover:text-snow"}`}
+                      >
+                        <Icon size={17} />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(mode === "login" || mode === "register") && (
+                <AuthInput icon={LockKeyhole} label="Password" type={showPassword ? "text" : "password"} value={form.password} onChange={(event) => update("password", event.target.value)} placeholder="Minimum 8 characters" error={errors.password} action={passwordAction} />
+              )}
+
+              {mode === "register" && (
+                <AuthInput icon={LockKeyhole} label="Confirm password" type={showConfirm ? "text" : "password"} value={form.confirmPassword} onChange={(event) => update("confirmPassword", event.target.value)} placeholder="Repeat password" error={errors.confirmPassword} action={confirmAction} />
+              )}
+
+              {(mode === "otp" || (isForgot && forgotStep === "otp")) && (
+                <AuthInput icon={KeyRound} label="OTP verification code" inputMode="numeric" value={form.otp} onChange={(event) => update("otp", event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="123456" error={errors.otp} />
+              )}
+
+              {isForgot && forgotStep === "reset" && (
+                <>
+                  <AuthInput icon={LockKeyhole} label="New password" type={showPassword ? "text" : "password"} value={form.resetPassword} onChange={(event) => update("resetPassword", event.target.value)} placeholder="Minimum 8 characters" error={errors.resetPassword} action={passwordAction} />
+                  <AuthInput icon={LockKeyhole} label="Confirm new password" type={showConfirm ? "text" : "password"} value={form.resetConfirm} onChange={(event) => update("resetConfirm", event.target.value)} placeholder="Repeat new password" error={errors.resetConfirm} action={confirmAction} />
+                </>
+              )}
+
+              {mode === "login" && (
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                  <label className="flex items-center gap-2 font-bold text-mist">
+                    <input type="checkbox" checked={form.remember} onChange={(event) => update("remember", event.target.checked)} className="size-4 rounded border-white/20 bg-white/10 text-gold" />
+                    Remember me
+                  </label>
+                  <a href="#forgot-password" className="font-black text-gold transition hover:text-snow">Forgot password?</a>
+                </div>
+              )}
+
+              <AuthButton loading={loading}>
+                {mode === "login" ? "Sign in to WooAuctions" : mode === "register" ? "Create secure account" : mode === "otp" ? "Verify OTP" : forgotStep === "email" ? "Send reset OTP" : forgotStep === "otp" ? "Verify recovery code" : "Reset password"}
+              </AuthButton>
+            </form>
+
+            {mode === "login" && (
+              <>
+                <div className="my-6 flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-mist">
+                  <span className="h-px flex-1 bg-white/10" />
+                  or continue with
+                  <span className="h-px flex-1 bg-white/10" />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button type="button" onClick={() => socialLogin("google")} className="inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-4 font-black text-snow transition hover:-translate-y-0.5 hover:bg-white/[0.08]">
+                    <Chrome size={18} />
+                    Google
+                  </button>
+                  <button type="button" onClick={() => socialLogin("github")} className="inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-4 font-black text-snow transition hover:-translate-y-0.5 hover:bg-white/[0.08]">
+                    <Github size={18} />
+                    GitHub
+                  </button>
+                </div>
+              </>
+            )}
+
+            <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-sm text-mist">
+              {mode === "login" ? (
+                <>New to WooAuctions? <a href="#register" className="font-black text-gold">Create account</a></>
+              ) : mode === "register" ? (
+                <>Already verified? <a href="#login" className="font-black text-gold">Sign in</a></>
+              ) : mode === "otp" ? (
+                <>Need a new account? <a href="#register" className="font-black text-gold">Register again</a></>
+              ) : (
+                <>Remembered your password? <a href="#login" className="font-black text-gold">Back to login</a></>
+              )}
+            </div>
+          </motion.div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function Hero({ socketStatus, auctions }) {
+  return (
+    <section className="relative overflow-hidden bg-aurora">
+      <div className="absolute left-1/2 top-10 size-96 -translate-x-1/2 rounded-full bg-blue-premium/20 blur-3xl" />
+      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-20">
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+          <div className="chip mb-5 live-pulse">{socketStatus} updates</div>
+          <h1 className="font-display text-5xl font-black leading-[0.95] tracking-tight text-snow sm:text-6xl lg:text-7xl">
+            Premium live bidding for luxury assets.
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-mist">
+            Bid on electronics, vehicles, property, and collectibles with wallet funding, auto-bidding, fraud monitoring, and real-time auction intelligence.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href="#auctions" className="premium-button"><Zap size={18} /> Start Bidding</a>
+            <a href="#dashboard" className="blue-button"><LineChart size={18} /> View Dashboard</a>
+          </div>
+          <div className="mt-9 grid grid-cols-3 gap-3">
+            {[
+              ["1,284", "Live bids"],
+              ["KES 42M", "Daily volume"],
+              ["99.8%", "Uptime"]
+            ].map(([value, label]) => (
+              <div className="glass rounded-3xl p-4" key={label}>
+                <div className="font-display text-2xl font-black">{value}</div>
+                <div className="mt-1 text-xs font-bold uppercase text-mist">{label}</div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.1 }} className="glass relative overflow-hidden rounded-[2rem] p-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-blue-premium/20" />
+          <img className="relative h-80 w-full rounded-[1.5rem] object-cover" src={auctions[0].image} alt="Featured Tesla auction" />
+          <div className="relative -mt-20 mx-4 rounded-3xl border border-white/10 bg-midnight/80 p-5 backdrop-blur-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="chip live-pulse mb-3">Featured Live Auction</div>
+                <h2 className="font-display text-2xl font-black">{auctions[0].title}</h2>
+                <p className="mt-1 text-sm text-mist">Seller: {auctions[0].seller}</p>
+              </div>
+              <a href="#lot-AU-901" className="grid size-11 place-items-center rounded-2xl bg-white/10 text-gold">
+                <Heart size={19} />
+              </a>
+            </div>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              <Metric label="Current bid" value={formatKes(auctions[0].bid)} />
+              <Metric label="Bids" value={auctions[0].bids} />
+              <Metric label="Ends" value={auctions[0].time} />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function CategoryNav() {
+  const categories = [
+    [Smartphone, "Electronics", "342 lots", "auctions"],
+    [Car, "Vehicles", "118 lots", "vehicles"],
+    [Building2, "Property", "64 lots", "property"],
+    [Crown, "Luxury", "92 lots", "auctions"],
+    [BriefcaseBusiness, "Business", "40 lots", "auctions"]
+  ];
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {categories.map(([Icon, title, count, route]) => (
+          <motion.a href={`#${route}`} whileHover={{ y: -6 }} className="glass group rounded-3xl p-5 text-left transition" key={title}>
+            <div className="mb-5 grid size-12 place-items-center rounded-2xl bg-white/10 text-gold transition group-hover:bg-gold group-hover:text-slate-950">
+              <Icon size={22} />
+            </div>
+            <div className="font-display text-lg font-black">{title}</div>
+            <div className="mt-1 text-sm text-mist">{count}</div>
+          </motion.a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AuctionCard({ auction, compact = false }) {
+  return (
+    <motion.article whileHover={{ y: -8 }} className="soft-card group overflow-hidden rounded-[1.75rem]">
+      <div className={`relative ${compact ? "h-48" : "h-56"} bg-gradient-to-br ${auction.accent}`}>
+        <img className="h-full w-full object-cover opacity-85 transition duration-500 group-hover:scale-105" src={auction.image} alt={auction.title} />
+        <div className="absolute left-4 top-4 chip live-pulse bg-midnight/70">Live</div>
+        <button className="absolute right-4 top-4 grid size-11 place-items-center rounded-2xl bg-midnight/70 text-white backdrop-blur-xl transition hover:text-gold">
+          <Heart size={18} />
+        </button>
+      </div>
+      <div className="p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <span className="chip">{auction.category}</span>
+          <span className="flex items-center gap-1 text-sm font-bold text-green-success"><Timer size={16} /> {auction.time}</span>
+        </div>
+        <h3 className="font-display text-xl font-black">{auction.title}</h3>
+        <p className="mt-1 text-sm text-mist">Seller: {auction.seller} · {auction.location}</p>
+        <div className="mt-5 flex items-end justify-between">
+          <div>
+            <div className="text-xs font-bold uppercase text-mist">Current bid</div>
+            <div className="font-display text-2xl font-black text-gold">{formatKes(auction.bid)}</div>
+          </div>
+          <div className="text-right text-sm font-bold text-mist">{auction.bids} bids</div>
+        </div>
+        <div className="mt-5 h-2 rounded-full bg-white/10">
+          <div className="h-full rounded-full bg-gradient-to-r from-green-success via-blue-premium to-gold" style={{ width: `${auction.progress}%` }} />
+        </div>
+        <div className="mt-5 grid grid-cols-[1fr_auto] gap-3">
+          <a href={`#lot-${auction.id}`} className="premium-button py-3">Place Bid</a>
+          <a href={`#lot-${auction.id}`} className="grid size-12 place-items-center rounded-2xl border border-white/10 bg-white/5 text-mist hover:text-white">
+            <Eye size={18} />
+          </a>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function HomePage({ socketStatus, auctions }) {
+  return (
+    <>
+      <Hero socketStatus={socketStatus} auctions={auctions} />
+      <CategoryNav />
+      <AuctionsPreview auctions={auctions} />
+      <DashboardPreview />
+      <IntegrationStrip />
+    </>
+  );
+}
+
+function AuctionsPreview({ auctions }) {
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+        <div>
+          <div className="chip mb-3"><Sparkles size={15} /> Premium Marketplace</div>
+          <h2 className="font-display text-4xl font-black">Live auction lots</h2>
+          <p className="mt-3 max-w-2xl text-mist">Real-time bid state, reserve progress, watchlists, and production-ready bidding flows.</p>
+        </div>
+        <a href="#auctions" className="blue-button">Open Auction Page <ChevronRight size={18} /></a>
+      </div>
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {auctions.map((auction) => <AuctionCard auction={auction} key={auction.id} />)}
+      </div>
+    </section>
+  );
+}
+
+function AuctionsPage({ auctions }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const filtered = auctions.filter((auction) => {
+    const matchesQuery = `${auction.title} ${auction.seller} ${auction.category}`.toLowerCase().includes(query.toLowerCase());
+    const matchesCategory = category === "All" || auction.category === category;
+    return matchesQuery && matchesCategory;
+  });
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Auction Marketplace"
+        title="Advanced live auction discovery"
+        copy="Search, filter, watch, inspect, and bid on verified live lots with reserve tracking and seller trust signals."
+        action={<a href="#payments" className="premium-button"><Wallet size={18} /> Fund Wallet</a>}
+      />
+      <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
+        <div className="glass mb-6 grid gap-3 rounded-[2rem] p-4 lg:grid-cols-[1fr_auto_auto]">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-mist">
+            <Search size={18} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} className="w-full bg-transparent outline-none" placeholder="Search title, seller, category..." />
+          </div>
+          <select value={category} onChange={(event) => setCategory(event.target.value)} className="rounded-2xl border border-white/10 bg-midnight px-4 py-3 font-bold text-snow">
+            {["All", "Vehicles", "Luxury", "Electronics", "Property"].map((item) => <option key={item}>{item}</option>)}
+          </select>
+          <button className="blue-button"><Filter size={18} /> Smart Filters</button>
+        </div>
+        <div className="mb-5 text-sm font-bold text-mist">{filtered.length} matching lots</div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {filtered.map((auction) => <AuctionCard auction={auction} key={auction.id} />)}
+        </div>
+      </section>
+    </>
+  );
+}
+
+function AssetPage({ type, auctions }) {
+  const isVehicle = type === "Vehicles";
+  const items = auctions.filter((auction) => auction.category === type);
+  const Icon = isVehicle ? Car : Building2;
+
+  return (
+    <>
+      <PageHeader
+        eyebrow={`${type} Desk`}
+        title={isVehicle ? "Verified vehicle auctions" : "Property bidding room"}
+        copy={isVehicle ? "Browse logbook-verified vehicles with inspection notes, deposit holds, and seller trust scores." : "Review property lots with document checks, escrow deposits, and reserve transparency."}
+        action={<a href="#auctions" className="blue-button"><Icon size={18} /> Browse All Lots</a>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:grid-cols-[0.75fr_1.25fr] lg:px-8">
+        <div className="glass rounded-[2rem] p-6">
+          <Icon className="mb-5 text-gold" size={32} />
+          <h2 className="font-display text-2xl font-black">{isVehicle ? "Vehicle checks" : "Property checks"}</h2>
+          <div className="mt-5 space-y-3">
+            {(isVehicle
+              ? ["Logbook verification", "Mileage and battery report", "Transfer fee estimate", "Deposit hold rules"]
+              : ["Title deed review", "Survey map and location", "Escrow deposit workflow", "Advocate settlement status"]
+            ).map((item) => (
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3" key={item}>
+                <CheckCircle2 className="text-green-success" size={18} />
+                <span className="font-bold">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          {items.map((auction) => <AuctionCard auction={auction} compact key={auction.id} />)}
+        </div>
+      </section>
+    </>
+  );
+}
+
+function LotPage({ lotId, auctions }) {
+  const auction = auctions.find((item) => item.id === lotId) || auctions[0];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow={`Lot ${auction.id}`}
+        title={auction.title}
+        copy={`${auction.inspection} Current bid is ${formatKes(auction.bid)} and the auction ends in ${auction.time}.`}
+        action={<a href="#payments" className="premium-button"><CreditCard size={18} /> Fund to Bid</a>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
+        <div className="glass overflow-hidden rounded-[2rem]">
+          <img className="h-[420px] w-full object-cover" src={auction.image} alt={auction.title} />
+          <div className="grid gap-4 p-6 md:grid-cols-3">
+            <Metric label="Current bid" value={formatKes(auction.bid)} />
+            <Metric label="Reserve" value={formatKes(auction.reserve)} />
+            <Metric label="Watchers" value={auction.watchers} />
+          </div>
+        </div>
+        <aside className="space-y-5">
+          <div className="soft-card rounded-[2rem] p-6">
+            <div className="chip live-pulse mb-4">Live Bid Room</div>
+            <h2 className="font-display text-2xl font-black">Place bid or activate auto-bid</h2>
+            <div className="mt-5 grid gap-3">
+              <input className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder={`Minimum ${formatKes(auction.bid + 25000)}`} />
+              <input className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder="Secret auto-bid maximum" />
+              <button className="premium-button">Submit Bid</button>
+              <button className="blue-button">Enable Auto-Bid</button>
+            </div>
+          </div>
+          <div className="glass rounded-[2rem] p-6">
+            <h3 className="font-display text-xl font-black">Lot details</h3>
+            <div className="mt-4 space-y-3">
+              {auction.specs.map((spec) => (
+                <div className="flex items-center gap-3 text-mist" key={spec}>
+                  <PackageCheck size={17} className="text-green-success" />
+                  {spec}
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm font-bold text-mist">
+              <Camera size={18} className={auction.cameraAvailable ? "text-green-success" : "text-orange-cta"} />
+              Camera evidence {auction.cameraAvailable ? "available for this lot" : "not yet attached"}
+            </div>
+            <p className="mt-5 rounded-2xl bg-white/5 p-4 text-sm leading-6 text-mist">{auction.payment}</p>
+          </div>
+        </aside>
+      </section>
+    </>
+  );
+}
+
+function DashboardPreview() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <WalletPanel />
+        <AnalyticsPanel />
+      </div>
+    </section>
+  );
+}
+
+function DashboardPage() {
+  return (
+    <>
+      <PageHeader
+        eyebrow="Bidder Dashboard"
+        title="Your wallet, bids, wins, and alerts"
+        copy="A complete bidder control center with watchlist, active bids, transaction history, notifications, and analytics."
+        action={<a href="#payments" className="premium-button"><Wallet size={18} /> Manage Wallet</a>}
+      />
+      <DashboardPreview />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:grid-cols-3 lg:px-8">
+        {["Watchlist: 34 active lots", "Auto-bids: 6 protected bids", "Notifications: 12 unread"].map((item) => (
+          <div className="glass rounded-3xl p-5" key={item}>
+            <User className="mb-4 text-gold" />
+            <h3 className="font-display text-xl font-black">{item}</h3>
+            <p className="mt-2 text-sm text-mist">Personalized bidder state ready for backend API hydration.</p>
+          </div>
+        ))}
+      </section>
+    </>
+  );
+}
+
+function WalletPanel() {
+  return (
+    <div className="glass rounded-[2rem] p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-3xl font-black">Wallet</h2>
+          <p className="text-mist">Balance, holds, wins, and transaction records.</p>
+        </div>
+        <Wallet className="text-gold" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Metric label="Wallet balance" value="KES 110,240" />
+        <Metric label="Active holds" value="KES 42,000" />
+        <Metric label="Auctions won" value="7" />
+        <Metric label="Watchlist" value="34" />
+      </div>
+      <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4">
+        <div className="mb-4 flex items-center justify-between">
+          <strong>Transaction history</strong>
+          <span className="text-sm text-green-success">M-Pesa ready</span>
+        </div>
+        {["STK push pending - KES 15,000", "Bid hold released - KES 8,500", "Auction won payment - KES 42,000"].map((item) => (
+          <div className="flex items-center justify-between border-t border-white/10 py-3 text-sm" key={item}>
+            <span className="text-mist">{item}</span>
+            <CheckCircle2 size={16} className="text-green-success" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsPanel() {
+  return (
+    <div className="soft-card rounded-[2rem] p-6">
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-3xl font-black">Analytics</h2>
+          <p className="text-mist">Bids and revenue volume.</p>
+        </div>
+        <TrendingUp className="text-green-success" />
+      </div>
+      <div className="h-72">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData}>
+            <defs>
+              <linearGradient id="bidGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#2563EB" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+            <XAxis dataKey="name" stroke="#94A3B8" />
+            <YAxis stroke="#94A3B8" />
+            <Tooltip contentStyle={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16 }} />
+            <Area type="monotone" dataKey="bids" stroke="#2563EB" fill="url(#bidGradient)" strokeWidth={3} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function AdminPage({ pendingLots, approvedLots, rejectedLots, onApproveLot, onRejectLot }) {
+  return (
+    <>
+      <PageHeader
+        eyebrow="Admin Control Center"
+        title="Manage auctions, users, fraud, and revenue"
+        copy="Production-grade admin workspace for approval queues, seller checks, fraud monitoring, reports, and Socket.IO activity."
+        action={<button className="premium-button"><ShieldAlert size={18} /> Review Flags</button>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:grid-cols-[1fr_0.85fr] lg:px-8">
+        <div className="glass rounded-[2rem] p-6">
+          <div className="grid gap-3 md:grid-cols-3">
+            <Metric label="Pending approvals" value={pendingLots.length} />
+            <Metric label="Approved lots" value={approvedLots.length} />
+            <Metric label="Revenue today" value="KES 5.4M" />
+          </div>
+          <div className="mt-6 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+                <XAxis dataKey="name" stroke="#94A3B8" />
+                <YAxis stroke="#94A3B8" />
+                <Tooltip contentStyle={{ background: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16 }} />
+                <Bar dataKey="revenue" fill="#F97316" radius={[10, 10, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <ActivityFeed />
+      </section>
+      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <AdminApprovalQueue pendingLots={pendingLots} rejectedLots={rejectedLots} onApproveLot={onApproveLot} onRejectLot={onRejectLot} />
+      </section>
+    </>
+  );
+}
+
+function AdminApprovalQueue({ pendingLots, rejectedLots, onApproveLot, onRejectLot }) {
+  return (
+    <div className="soft-card rounded-[2rem] p-6">
+      <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+        <div>
+          <h2 className="font-display text-3xl font-black">Goods approval queue</h2>
+          <p className="text-mist">Auctioneers upload goods here first. Admin approval publishes them to the public auction marketplace.</p>
+        </div>
+        <ClipboardCheck className="text-gold" size={30} />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {pendingLots.map((lot) => (
+          <article className="rounded-3xl border border-white/10 bg-white/5 p-4" key={lot.id}>
+            <div className="grid gap-4 sm:grid-cols-[10rem_1fr]">
+              <img className="h-40 w-full rounded-2xl object-cover" src={lot.image} alt={lot.title} />
+              <div>
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <span className="chip">{lot.id}</span>
+                  <span className="chip">{lot.category}</span>
+                  <span className="chip"><Camera size={14} /> {lot.cameraAvailable ? "Camera proof" : "No camera proof"}</span>
+                </div>
+                <h3 className="font-display text-xl font-black">{lot.title}</h3>
+                <p className="mt-1 text-sm text-mist">Uploaded by {lot.seller} in {lot.location}</p>
+                <p className="mt-3 text-sm leading-6 text-mist">{lot.inspection}</p>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <button onClick={() => onApproveLot(lot.id)} className="premium-button py-3"><BadgeCheck size={18} /> Approve</button>
+                  <button onClick={() => onRejectLot(lot.id)} className="blue-button bg-orange-cta py-3"><XCircle size={18} /> Reject</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
+        {pendingLots.length === 0 && (
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-mist">No goods are waiting for approval right now.</div>
+        )}
+      </div>
+      {rejectedLots.length > 0 && (
+        <div className="mt-5 rounded-3xl border border-orange-cta/25 bg-orange-cta/10 p-4 text-sm text-mist">
+          Rejected drafts: {rejectedLots.map((lot) => lot.title).join(", ")}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AuctioneerUploadPage({ onSubmitLot }) {
+  const [form, setForm] = useState({
+    title: "",
+    seller: "Auctioneer Team",
+    category: "Electronics",
+    location: "Nairobi",
+    reserve: "",
+    cameraAvailable: true,
+    image: ""
+  });
+  const [cameraStatus, setCameraStatus] = useState("Not checked");
+  const [submitted, setSubmitted] = useState(null);
+
+  const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+
+  const checkCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraStatus("Camera API is not available in this browser");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+      setCameraStatus("Camera is available for live item proof");
+      update("cameraAvailable", true);
+    } catch {
+      setCameraStatus("Camera permission was blocked or no camera was found");
+      update("cameraAvailable", false);
+    }
+  };
+
+  const submit = (event) => {
+    event.preventDefault();
+    const lot = {
+      id: `AU-${Math.floor(1100 + Math.random() * 8000)}`,
+      title: form.title || "Untitled uploaded lot",
+      category: form.category,
+      seller: form.seller || "Auctioneer",
+      bid: Math.max(1000, Number(form.reserve || 0) * 0.75),
+      reserve: Number(form.reserve || 0) || 100000,
+      bids: 0,
+      watchers: 0,
+      progress: 10,
+      time: "Pending",
+      location: form.location || "Nairobi",
+      image: form.image || "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80",
+      accent: "from-green-success/25 to-blue-premium/20",
+      specs: ["Auctioneer upload", "Proof pending", "Admin approval required", form.cameraAvailable ? "Camera proof available" : "Camera proof not attached"],
+      inspection: "New auctioneer upload waiting for admin approval, document checks, and reserve confirmation.",
+      payment: "Payment and bidding controls activate after admin approval.",
+      status: "pending",
+      cameraAvailable: form.cameraAvailable,
+      approvalNote: "Submitted by auctioneer for admin review."
+    };
+    onSubmitLot(lot);
+    setSubmitted(lot.id);
+    setForm((current) => ({ ...current, title: "", reserve: "", image: "" }));
+  };
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Auctioneer Workspace"
+        title="Upload goods for admin approval"
+        copy="Auctioneers can submit goods with reserve price, seller details, photos, and camera proof. The lot stays hidden until an admin approves it."
+        action={<a href="#admin" className="blue-button"><ClipboardCheck size={18} /> Open Admin Queue</a>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-[1fr_0.85fr] lg:px-8">
+        <form onSubmit={submit} className="soft-card rounded-[2rem] p-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <input required value={form.title} onChange={(event) => update("title", event.target.value)} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder="Goods title" />
+            <input value={form.seller} onChange={(event) => update("seller", event.target.value)} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder="Auctioneer or seller name" />
+            <select value={form.category} onChange={(event) => update("category", event.target.value)} className="rounded-2xl border border-white/10 bg-midnight px-4 py-4 font-bold text-snow">
+              {["Electronics", "Vehicles", "Property", "Luxury", "Business"].map((item) => <option key={item}>{item}</option>)}
+            </select>
+            <input value={form.location} onChange={(event) => update("location", event.target.value)} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder="Location" />
+            <input type="number" min="1000" value={form.reserve} onChange={(event) => update("reserve", event.target.value)} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder="Reserve price in KES" />
+            <input value={form.image} onChange={(event) => update("image", event.target.value)} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder="Image URL or uploaded file path" />
+          </div>
+          <label className="mt-5 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 font-bold text-mist">
+            <input type="checkbox" checked={form.cameraAvailable} onChange={(event) => update("cameraAvailable", event.target.checked)} />
+            Camera evidence is available for this item
+          </label>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <button type="button" onClick={checkCamera} className="blue-button"><Camera size={18} /> Check Camera</button>
+            <button className="premium-button"><ImagePlus size={18} /> Submit for Approval</button>
+          </div>
+          {submitted && <p className="mt-4 rounded-2xl bg-green-success/10 p-4 text-sm font-bold text-green-success">Lot {submitted} submitted to admin approval queue.</p>}
+        </form>
+        <div className="glass rounded-[2rem] p-6">
+          <Camera className="mb-5 text-gold" size={34} />
+          <h2 className="font-display text-3xl font-black">Camera availability</h2>
+          <p className="mt-3 leading-7 text-mist">Use camera proof for live condition checks, serial-number photos, packaging verification, and seller trust scoring.</p>
+          <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 font-bold text-mist">{cameraStatus}</div>
+          <div className="mt-5 space-y-3">
+            {["Admin approval required before publishing", "Rejected goods remain hidden", "Approved goods join public auctions"].map((item) => (
+              <div className="flex items-center gap-3 text-mist" key={item}>
+                <CheckCircle2 className="text-green-success" size={18} />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function SupportPage() {
+  const [messages, setMessages] = useState([
+    ["assistant", "Hello, I can help with bidding, payments, seller uploads, approvals, camera proof, and account questions."]
+  ]);
+  const [input, setInput] = useState("");
+
+  const replyFor = (text) => {
+    const query = text.toLowerCase();
+    if (query.includes("approve") || query.includes("admin")) return "Goods uploaded by auctioneers remain pending until an admin opens the approval queue, checks proof, then approves or rejects the lot.";
+    if (query.includes("camera")) return "Camera proof helps verify the item condition. Auctioneers can check browser camera access from the upload page and mark camera evidence as available.";
+    if (query.includes("pay") || query.includes("mpesa") || query.includes("wallet")) return "Wallet funding, bid holds, M-Pesa deposits, and escrow payouts are represented in the Payments page and are ready for backend integration.";
+    if (query.includes("bid")) return "Open a lot, enter a manual bid or auto-bid limit, then submit. The UI already separates public bidding from admin-only approval.";
+    return "I can guide the customer to browse auctions, place bids, fund the wallet, contact an auctioneer, or check admin approval status.";
+  };
+
+  const send = (event) => {
+    event.preventDefault();
+    if (!input.trim()) return;
+    const text = input.trim();
+    setMessages((current) => [...current, ["user", text], ["assistant", replyFor(text)]]);
+    setInput("");
+  };
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="AI Customer Care"
+        title="Auction support assistant"
+        copy="A local AI-mode support panel for common customer questions. It can later connect to a real AI API and your helpdesk tickets."
+        action={<a href="#sell" className="premium-button"><Camera size={18} /> Auctioneer Upload</a>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
+        <div className="glass rounded-[2rem] p-6">
+          <Bot className="mb-5 text-gold" size={34} />
+          <h2 className="font-display text-3xl font-black">AI mode coverage</h2>
+          <div className="mt-5 space-y-3">
+            {["Bidding guidance", "Payment and wallet help", "Admin approval status", "Camera proof support", "Seller upload instructions"].map((item) => (
+              <div className="flex items-center gap-3 text-mist" key={item}>
+                <MessageCircle className="text-green-success" size={18} />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="soft-card rounded-[2rem] p-6">
+          <div className="mb-5 h-96 space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-4">
+            {messages.map(([role, text], index) => (
+              <div className={`max-w-[85%] rounded-2xl p-3 text-sm leading-6 ${role === "user" ? "ml-auto bg-blue-premium text-white" : "bg-midnight text-mist"}`} key={`${role}-${index}`}>
+                {text}
+              </div>
+            ))}
+          </div>
+          <form onSubmit={send} className="flex gap-3">
+            <input value={input} onChange={(event) => setInput(event.target.value)} className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 outline-none" placeholder="Ask about bidding, approval, camera, or payments..." />
+            <button className="premium-button px-4" aria-label="Send message"><Send size={18} /></button>
+          </form>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
+  const historyKey = "woo-react-ai-hub-history";
+  const lotMatch = route.match(/^lot-(.+)$/);
+  const currentLot = lotMatch ? auctions.find((lot) => lot.id === lotMatch[1]) : null;
+  const messagesRef = useRef(null);
+  const inputRef = useRef(null);
+  const [open, setOpen] = useState(() => window.location.hash === "#support");
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(historyKey) || "[]");
+      if (Array.isArray(saved) && saved.length) return saved.slice(-12);
+    } catch {
+      return [];
+    }
+    return [
+      {
+        role: "assistant",
+        text: "Hi, I am the WooAuctions AI Hub. I float on every screen and can help with auctions, bids, wallets, seller uploads, approvals, and admin questions."
+      }
+    ];
+  });
+
+  const includesAny = (value, words) => words.some((word) => value.includes(word));
+
+  const describeContext = () => {
+    if (currentLot) {
+      return `Watching ${currentLot.title}: current bid ${formatKes(currentLot.bid)}, ${currentLot.bids} bids, ${currentLot.time} left.`;
+    }
+    if (route === "auctions") return `Watching ${auctions.length} live auction lots. I can help narrow choices, explain bidding, or open a specific lot.`;
+    if (route === "vehicles") return "Watching vehicle auctions. I can help compare logbook checks, inspection proof, bid holds, and escrow steps.";
+    if (route === "property") return "Watching property auctions. I can help with title checks, deposit flow, reserve progress, and document questions.";
+    if (route === "sell") return "Watching the auctioneer upload flow. I can help submit goods, check camera proof, and explain admin approval.";
+    if (route === "admin") return `Watching admin approval. ${pendingLots.length} lot(s) are pending and ${rejectedLots.length} draft(s) are rejected.`;
+    if (route === "payments") return "Watching payments. I can explain wallet funding, M-Pesa STK push, bid holds, refunds, and escrow payouts.";
+    if (route === "dashboard") return "Watching the bidder dashboard. I can explain performance, active bids, watchlists, and alerts.";
+    if (route === "notifications") return "Watching notifications. I can explain outbid alerts, wallet events, seller messages, and admin warnings.";
+    if (["login", "register", "forgot-password", "otp-verification"].includes(route)) return "Watching secure authentication. I can help with sign in, registration, OTP verification, password reset, and Supabase setup.";
+    return "Watching the WooAuctions marketplace. I can guide a user from discovery to bidding, payment, upload, or admin review.";
+  };
+
+  const replyFor = (text) => {
+    const query = text.toLowerCase();
+    const amount = Number(query.replace(/,/g, "").match(/\b\d+(\.\d+)?\b/)?.[0] || 0);
+
+    if (includesAny(query, ["where am i", "this page", "what page", "what can you do", "help"])) {
+      return describeContext();
+    }
+
+    if (includesAny(query, ["bid", "bidding", "auto", "proxy", "place", "reserve"])) {
+      if (currentLot) {
+        if (amount && amount <= currentLot.bid) {
+          return `For ${currentLot.title}, bid above ${formatKes(currentLot.bid)} to compete. Proxy bidding is best when you want the system to protect you up to a private maximum.`;
+        }
+        if (amount && amount > currentLot.bid) {
+          return `${formatKes(amount)} is above the current bid for ${currentLot.title}. Review the timer, reserve progress, and payment hold before confirming.`;
+        }
+        return `For ${currentLot.title}, current bid is ${formatKes(currentLot.bid)} with ${currentLot.time} left. Use manual bidding for one bid, or proxy bidding to let the system raise gradually up to your limit.`;
+      }
+      return "Open a lot first, review the current bid and reserve progress, then place a manual bid or set a proxy maximum. I can also take you to the auctions screen.";
+    }
+
+    if (includesAny(query, ["pay", "payment", "mpesa", "m-pesa", "wallet", "deposit", "refund", "escrow"])) {
+      return "Wallet funding supports bid holds and quick checkout. For M-Pesa, the app can trigger an STK push; for high-value lots, escrow keeps money protected until buyer and seller checks are complete.";
+    }
+
+    if (includesAny(query, ["upload", "seller", "auctioneer", "camera", "proof", "approve", "approval"])) {
+      return `Auctioneers submit goods from the upload screen with reserve, category, image, and camera proof. Admins then review pending lots before publishing. Current pending queue: ${pendingLots.length}.`;
+    }
+
+    if (includesAny(query, ["admin", "reject", "moderation", "user", "flag", "queue"])) {
+      return `Admin work starts in the approval queue: verify seller proof, documents, reserve price, and item condition before approving. Rejected drafts stay hidden from bidders.`;
+    }
+
+    if (includesAny(query, ["find", "search", "filter", "category", "vehicle", "property", "luxury", "electronics"])) {
+      const examples = auctions.slice(0, 3).map((lot) => `${lot.title} at ${formatKes(lot.bid)}`).join("; ");
+      return `Use Auctions for all lots, or jump into Vehicles and Property for asset-specific views. Current examples: ${examples}.`;
+    }
+
+    if (includesAny(query, ["watch", "watchlist", "notification", "alert", "outbid"])) {
+      return "Watchlists and notifications help users track lots without bidding immediately. Outbid, wallet, seller, and admin alerts should land in the notification center.";
+    }
+
+    if (includesAny(query, ["login", "register", "password", "otp", "supabase", "sign in", "account"])) {
+      return "The auth system supports email/password login, registration by role, forgot-password recovery, OTP verification, social login buttons, validation, and Supabase calls when VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are configured.";
+    }
+
+    return `I hear you: "${text}". ${describeContext()} Ask me about bidding, payments, uploads, approvals, search, watchlists, or admin actions and I will respond in context.`;
+  };
+
+  const suggestions = () => {
+    if (currentLot) return ["Should I bid now?", "Explain proxy bidding", "What should I verify?"];
+    if (route === "sell") return ["How do I upload goods?", "Check camera proof", "What happens after approval?"];
+    if (route === "admin") return ["What needs approval?", "How do I reject safely?", "Summarize admin work"];
+    if (route === "payments") return ["Explain bid holds", "How does M-Pesa work?", "What is escrow?"];
+    if (["login", "register", "forgot-password", "otp-verification"].includes(route)) return ["Help me sign in", "Explain OTP", "Supabase setup"];
+    return ["Help me find an auction", "How do I place a bid?", "How does wallet payment work?"];
+  };
+
+  const sendPrompt = (value) => {
+    const text = value.trim();
+    if (!text) return;
+    setMessages((current) => [
+      ...current,
+      { role: "user", text },
+      { role: "assistant", text: replyFor(text) }
+    ].slice(-14));
+    setInput("");
+  };
+
+  const runAction = (action) => {
+    if (action === "search") {
+      const search = document.querySelector("input[placeholder*='Search']");
+      if (search instanceof HTMLInputElement) {
+        search.focus();
+        setMessages((current) => [...current, { role: "assistant", text: "Search is focused. Type a lot title, seller, category, or lot ID." }].slice(-14));
+      } else {
+        sendPrompt("Help me find an auction");
+      }
+      return;
+    }
+
+    if (action === "auctions") window.location.hash = "auctions";
+    if (action === "lot" && auctions[0]) window.location.hash = `lot-${auctions[0].id}`;
+    if (action === "admin") window.location.hash = "admin";
+    if (action === "payments") window.location.hash = "payments";
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    localStorage.setItem(historyKey, JSON.stringify(messages.slice(-14)));
+  }, [messages]);
+
+  useEffect(() => {
+    messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, open]);
+
+  useEffect(() => {
+    const openHub = () => setOpen(true);
+    window.addEventListener("woo-open-ai-hub", openHub);
+    return () => window.removeEventListener("woo-open-ai-hub", openHub);
+  }, []);
+
+  useEffect(() => {
+    if (route === "support") setOpen(true);
+  }, [route]);
+
+  useEffect(() => {
+    if (open) window.setTimeout(() => inputRef.current?.focus(), 80);
+  }, [open]);
+
+  return (
+    <div className="pointer-events-none fixed bottom-4 left-4 right-4 z-[80] flex justify-end sm:left-auto sm:w-[25rem]">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-expanded={open}
+        className={`pointer-events-auto inline-flex min-h-14 items-center gap-3 rounded-full border border-gold/40 bg-gradient-to-r from-gold to-green-success px-3 py-2 font-black text-slate-950 shadow-glow transition ${open ? "translate-y-3 opacity-0" : "translate-y-0 opacity-100"}`}
+      >
+        <span className="grid size-10 place-items-center rounded-full bg-midnight text-sm text-gold">AI</span>
+        Ask Hub
+      </button>
+
+      <section className={`pointer-events-auto absolute bottom-0 right-0 grid max-h-[calc(100vh-2rem)] w-full grid-rows-[auto_auto_auto_auto_minmax(12rem,1fr)_auto] gap-3 overflow-hidden rounded-3xl border border-gold/25 bg-panel/95 p-4 shadow-glass backdrop-blur-2xl transition ${open ? "visible translate-y-0 scale-100 opacity-100" : "invisible translate-y-4 scale-95 opacity-0"}`} aria-label="Floating AI Hub">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="mb-1 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-green-success"><Sparkles size={14} /> Floating AI Hub</div>
+            <h2 className="font-display text-2xl font-black">How can I help?</h2>
+          </div>
+          <button type="button" onClick={() => setOpen(false)} className="grid size-10 place-items-center rounded-2xl border border-white/10 bg-white/5 text-mist hover:text-white" aria-label="Close AI Hub">
+            <X size={18} />
+          </button>
+        </div>
+
+        <p className="rounded-2xl border border-green-success/20 bg-green-success/10 p-3 text-sm leading-6 text-mist">{describeContext()}</p>
+
+        <div className="flex flex-wrap gap-2">
+          {suggestions().map((prompt) => (
+            <button key={prompt} type="button" onClick={() => sendPrompt(prompt)} className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-snow hover:bg-white/15">
+              {prompt}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            ["search", "Focus search"],
+            ["auctions", "Auctions"],
+            ["lot", "Open lot"],
+            ["payments", "Payments"],
+            ["admin", "Admin"]
+          ].map(([action, label]) => (
+            <button key={action} type="button" onClick={() => runAction(action)} className="rounded-full border border-gold/20 bg-gold/10 px-3 py-2 text-xs font-black text-gold">
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div ref={messagesRef} className="grid max-h-72 content-start gap-3 overflow-y-auto rounded-2xl border border-white/10 bg-midnight/70 p-3">
+          {messages.map((message, index) => (
+            <div key={`${message.role}-${index}`} className={`max-w-[88%] rounded-2xl p-3 text-sm leading-6 ${message.role === "user" ? "ml-auto bg-gold text-slate-950 font-bold" : "border border-green-success/15 bg-green-success/10 text-mist"}`}>
+              {message.text}
+            </div>
+          ))}
+        </div>
+
+        <form onSubmit={(event) => { event.preventDefault(); sendPrompt(input); }} className="grid grid-cols-[1fr_auto] gap-2">
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            className="min-w-0 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none placeholder:text-mist"
+            placeholder="Ask about bids, payments, approvals..."
+          />
+          <button className="premium-button px-4" aria-label="Send message"><Send size={18} /></button>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function ActivityFeed() {
+  return (
+    <div className="soft-card rounded-[2rem] p-6">
+      <div className="mb-5 flex items-center justify-between">
+        <h3 className="font-display text-2xl font-black">Live activity</h3>
+        <Activity className="text-green-success" />
+      </div>
+      <div className="space-y-3">
+        {activity.map(([title, text, time]) => (
+          <motion.div initial={{ opacity: 0, x: 12 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="rounded-3xl border border-white/10 bg-white/5 p-4" key={text}>
+            <div className="flex items-center justify-between">
+              <strong>{title}</strong>
+              <span className="text-xs font-bold text-gold">{time}</span>
+            </div>
+            <p className="mt-1 text-sm text-mist">{text}</p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PaymentsPage() {
+  return (
+    <>
+      <PageHeader
+        eyebrow="Wallet and Payments"
+        title="M-Pesa, wallet holds, escrow, and payouts"
+        copy="Payment architecture screen for STK push funding, bid holds, refunds, seller payouts, and audit-ready transaction logs."
+        action={<button className="premium-button"><CreditCard size={18} /> Simulate STK Push</button>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-3 lg:px-8">
+        {[
+          ["M-Pesa STK Push", "Collect deposits and wallet top-ups with callback-ready payment references."],
+          ["Bid Holds", "Reserve wallet balance during active bidding and release holds when outbid."],
+          ["Escrow Payouts", "Protect high-value vehicle, property, and luxury transactions before seller payout."]
+        ].map(([title, copy]) => (
+          <div className="glass rounded-[2rem] p-6" key={title}>
+            <CreditCard className="mb-5 text-gold" />
+            <h2 className="font-display text-2xl font-black">{title}</h2>
+            <p className="mt-3 leading-7 text-mist">{copy}</p>
+          </div>
+        ))}
+      </section>
+    </>
+  );
+}
+
+function NotificationsPage() {
+  return (
+    <>
+      <PageHeader
+        eyebrow="Notification Center"
+        title="Realtime alerts and bidder events"
+        copy="A dedicated notification hub for outbid alerts, winning notices, wallet events, seller messages, and admin warnings."
+      />
+      <section className="mx-auto max-w-4xl px-4 pb-16 sm:px-6 lg:px-8">
+        <ActivityFeed />
+      </section>
+    </>
+  );
+}
+
+function IntegrationStrip() {
+  const integrations = [
+    [CreditCard, "M-Pesa STK Push", "Payment hooks ready for Node.js callbacks"],
+    [PackageCheck, "Socket.IO", "Realtime bid, wallet, and notification events"],
+    [Bell, "Notification Center", "Animated alerts and user activity triggers"]
+  ];
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="grid gap-4 lg:grid-cols-3">
+        {integrations.map(([Icon, title, text]) => (
+          <div className="glass rounded-3xl p-5" key={title}>
+            <Icon className="mb-5 text-gold" />
+            <h3 className="font-display text-xl font-black">{title}</h3>
+            <p className="mt-2 text-sm leading-6 text-mist">{text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LoadingStates() {
+  const loadingBars = useMemo(() => Array.from({ length: 3 }), []);
+  return (
+    <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+      <div className="glass rounded-[2rem] p-6">
+        <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h2 className="font-display text-3xl font-black">Skeleton loading states</h2>
+            <p className="text-mist">Ready for API fetches, Socket.IO reconnects, and dashboard hydration.</p>
+          </div>
+          <button className="premium-button"><LineChart size={18} /> Generate Report</button>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {loadingBars.map((_, index) => (
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-4" key={index}>
+              <div className="skeleton mb-4 h-36 rounded-2xl" />
+              <div className="skeleton mb-3 h-4 rounded-full" />
+              <div className="skeleton h-4 w-2/3 rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  const socketStatus = useSocketStatus();
+  const route = useRoute();
+  const [approvedLots, setApprovedLots] = useState(() => loadStoredLots("woo-approved-lots", initialAuctions));
+  const [pendingLots, setPendingLots] = useState(() => loadStoredLots("woo-pending-lots", initialPendingLots));
+  const [rejectedLots, setRejectedLots] = useState(() => loadStoredLots("woo-rejected-lots", []));
+  const lotMatch = route.match(/^lot-(.+)$/);
+  const visibleAuctions = approvedLots.filter((lot) => lot.status === "approved");
+
+  useEffect(() => {
+    localStorage.setItem("woo-approved-lots", JSON.stringify(approvedLots));
+  }, [approvedLots]);
+
+  useEffect(() => {
+    localStorage.setItem("woo-pending-lots", JSON.stringify(pendingLots));
+  }, [pendingLots]);
+
+  useEffect(() => {
+    localStorage.setItem("woo-rejected-lots", JSON.stringify(rejectedLots));
+  }, [rejectedLots]);
+
+  const submitLot = (lot) => {
+    setPendingLots((current) => [lot, ...current]);
+    window.location.hash = "admin";
+  };
+
+  const approveLot = (id) => {
+    const lot = pendingLots.find((item) => item.id === id);
+    if (!lot) return;
+    setApprovedLots((approved) => [
+      {
+        ...lot,
+        status: "approved",
+        time: "18h 00m",
+        approvalNote: "Approved by admin and published to marketplace."
+      },
+      ...approved
+    ]);
+    setPendingLots((current) => current.filter((item) => item.id !== id));
+  };
+
+  const rejectLot = (id) => {
+    const lot = pendingLots.find((item) => item.id === id);
+    if (!lot) return;
+    setRejectedLots((rejected) => [{ ...lot, status: "rejected", approvalNote: "Rejected by admin." }, ...rejected]);
+    setPendingLots((current) => current.filter((item) => item.id !== id));
+  };
+
+  const authModeByRoute = {
+    login: "login",
+    register: "register",
+    "forgot-password": "forgot",
+    "otp-verification": "otp"
+  };
+  const authMode = authModeByRoute[route];
+
+  if (authMode) {
+    return (
+      <div className="min-h-screen bg-midnight text-snow">
+        <AuthPage mode={authMode} />
+        <FloatingAIHub route={route} auctions={visibleAuctions} pendingLots={pendingLots} rejectedLots={rejectedLots} />
+      </div>
+    );
+  }
+
+  let page;
+  if (lotMatch) page = <LotPage lotId={lotMatch[1]} auctions={visibleAuctions} />;
+  else if (route === "auctions") page = <AuctionsPage auctions={visibleAuctions} />;
+  else if (route === "sell") page = <AuctioneerUploadPage onSubmitLot={submitLot} />;
+  else if (route === "vehicles") page = <AssetPage type="Vehicles" auctions={visibleAuctions} />;
+  else if (route === "property") page = <AssetPage type="Property" auctions={visibleAuctions} />;
+  else if (route === "dashboard") page = <DashboardPage />;
+  else if (route === "admin") page = <AdminPage pendingLots={pendingLots} approvedLots={visibleAuctions} rejectedLots={rejectedLots} onApproveLot={approveLot} onRejectLot={rejectLot} />;
+  else if (route === "payments") page = <PaymentsPage />;
+  else if (route === "notifications") page = <NotificationsPage />;
+  else page = <HomePage socketStatus={socketStatus} auctions={visibleAuctions} />;
+
+  return (
+    <div className="min-h-screen overflow-hidden bg-midnight text-snow">
+      <Navbar route={route} />
+      {page}
+      <LoadingStates />
+      <FloatingAIHub route={route} auctions={visibleAuctions} pendingLots={pendingLots} rejectedLots={rejectedLots} />
+    </div>
+  );
+}
+
+export default App;
