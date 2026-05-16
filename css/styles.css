@@ -78,13 +78,32 @@ nav {
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  white-space: nowrap;
   color: var(--text-white);
   font-family: Poppins, Inter, sans-serif;
   font-size: 1.45rem;
   font-weight: 900;
-  letter-spacing: 0;
-  text-decoration: none;
-  white-space: nowrap;
+}
+
+.logo .site-logo {
+  height: 44px;
+  display: block;
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(2,8,23,0.45);
+}
+
+.admin-brand .site-logo {
+  height: 40px;
+  display: block;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 6px;
 }
 
 .nav-links {

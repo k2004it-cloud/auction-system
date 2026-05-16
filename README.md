@@ -1,11 +1,11 @@
-# 🏆 Auction System - Frontend Prototype
+# PrimeBid - Frontend Prototype
 
 A complete HTML and CSS frontend for an online auction system based on the provided flowchart. This is the initial frontend foundation with responsive design and professional styling.
 
 ## 📁 Project Structure
 
 ```
-AUCTIONING SYSTEM/
+PrimeBid/
 ├── css/
 │   └── styles.css          # Main stylesheet (responsive design)
 ├── pages/

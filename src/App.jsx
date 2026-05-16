@@ -28,6 +28,7 @@ import {
   ImagePlus,
   KeyRound,
   Loader2,
+  LogOut,
   LockKeyhole,
   Mail,
   Menu,
@@ -213,15 +214,17 @@ const activity = [
 ];
 
 const navItems = [
-  { key: "home", label: "Home", roles: ["auctionee", "auctioneer", "admin"] },
-  { key: "auctions", label: "Auctions", roles: ["auctionee", "auctioneer"] },
-  { key: "sell", label: "Auctioneer Upload", roles: ["auctioneer", "admin"] },
-  { key: "vehicles", label: "Vehicles", roles: ["auctionee", "auctioneer"] },
-  { key: "property", label: "Property", roles: ["auctionee", "auctioneer"] },
-  { key: "dashboard", label: "Dashboard", roles: ["auctionee", "auctioneer", "admin"] },
-  { key: "admin", label: "Admin", roles: ["admin"] },
-  { key: "wallet", label: "Wallet", roles: ["auctionee", "auctioneer"] },
-  { key: "login", label: "Sign In", roles: ["auctionee", "auctioneer", "admin"] },
+  { key: "dashboard", label: "My Bids", roles: ["auctionee"] },
+  { key: "auctions", label: "Marketplace", roles: ["auctionee"] },
+  { key: "vehicles", label: "Vehicles", roles: ["auctionee"] },
+  { key: "property", label: "Property", roles: ["auctionee"] },
+  { key: "wallet", label: "Wallet", roles: ["auctionee"] },
+  { key: "dashboard", label: "Seller Desk", roles: ["auctioneer"] },
+  { key: "sell", label: "Upload Lot", roles: ["auctioneer"] },
+  { key: "seller-lots", label: "My Lots", roles: ["auctioneer"] },
+  { key: "payouts", label: "Payouts", roles: ["auctioneer"] },
+  { key: "admin", label: "Admin Control", roles: ["admin"] },
+  { key: "notifications", label: "Risk Alerts", roles: ["admin"] },
   { key: "support", label: "AI Care", roles: ["auctionee", "auctioneer", "admin"] }
 ];
 
@@ -275,20 +278,29 @@ function useRoute() {
 
 function Navbar({ route, role }) {
   const [open, setOpen] = useState(false);
-  const visibleNavItems = navItems.filter((item) => item.roles.includes(normalizeRole(role)));
+  const currentRole = normalizeRole(role);
+  const visibleNavItems = navItems.filter((item) => item.roles.includes(currentRole));
+  const homeRoute = getRoleHomeRoute(currentRole);
+  const searchPlaceholder =
+    currentRole === "admin"
+      ? "Search approvals, users, lot IDs..."
+      : currentRole === "auctioneer"
+        ? "Search your lots, drafts, payouts..."
+        : "Search auctions, sellers, lot IDs...";
   const openAiHub = () => {
-    window.dispatchEvent(new Event("woo-open-ai-hub"));
+    window.dispatchEvent(new Event("primebid-open-ai-hub"));
+    setOpen(false);
+  };
+  const signOut = () => {
+    clearAuthSession();
     setOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-midnight/80 backdrop-blur-2xl">
       <div className="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <a href="#home" className="flex items-center gap-3">
-          <div className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-gold to-orange-cta text-slate-950 shadow-gold">
-            <Gavel size={22} />
-          </div>
-          <span className="font-display text-xl font-black tracking-tight">WooAuctions</span>
+        <a href={`#${homeRoute}`} className="flex items-center gap-3">
+          <img src="/images/prime-logo.png" alt="PrimeBid" className="h-10 site-logo" />
         </a>
 
         <nav className="ml-6 hidden items-center gap-1 lg:flex">
@@ -315,7 +327,7 @@ function Navbar({ route, role }) {
 
         <div className="ml-auto hidden min-w-72 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-mist xl:flex">
           <Search size={18} />
-          <input className="w-full bg-transparent text-sm outline-none placeholder:text-mist" placeholder="Search auctions, sellers, lot IDs..." />
+          <input className="w-full bg-transparent text-sm outline-none placeholder:text-mist" placeholder={searchPlaceholder} />
         </div>
 
         <a href="#notifications" className="relative grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/5 transition hover:bg-white/10" aria-label="Notifications">
@@ -327,9 +339,18 @@ function Navbar({ route, role }) {
           <Moon size={18} />
         </button>
 
-        <a href="#dashboard" className="hidden size-11 place-items-center rounded-2xl bg-gradient-to-br from-blue-premium to-gold font-black sm:grid">
-          TP
+        <a href={`#${homeRoute}`} className="hidden min-h-11 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 text-sm font-black text-snow sm:inline-flex">
+          <User size={16} />
+          {roleLabels[currentRole]}
         </a>
+
+        <a href="#login" className="hidden rounded-2xl border border-gold/20 bg-gold/10 px-3 py-2 text-sm font-black text-gold transition hover:bg-gold hover:text-slate-950 md:inline-flex">
+          Switch Role
+        </a>
+
+        <button type="button" onClick={signOut} className="hidden size-11 place-items-center rounded-2xl border border-white/10 bg-white/5 text-mist transition hover:text-white sm:grid" aria-label="Sign out">
+          <LogOut size={18} />
+        </button>
 
         <button className="grid size-11 place-items-center rounded-2xl border border-white/10 bg-white/5 lg:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X size={18} /> : <Menu size={18} />}
@@ -340,7 +361,7 @@ function Navbar({ route, role }) {
         <div className="border-t border-white/10 bg-midnight/95 px-4 py-4 lg:hidden">
           <div className="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-mist">
             <Search size={18} />
-            <input className="w-full bg-transparent outline-none" placeholder="Search auctions..." />
+            <input className="w-full bg-transparent outline-none" placeholder={searchPlaceholder} />
           </div>
           <div className="grid gap-2">
             {visibleNavItems.map(({ key, label }) => key === "support" ? (
@@ -358,6 +379,12 @@ function Navbar({ route, role }) {
                 {label}
               </a>
             ))}
+            <a href="#login" onClick={() => setOpen(false)} className="rounded-2xl px-4 py-3 font-bold text-gold hover:bg-white/10">
+              Switch Role
+            </a>
+            <button type="button" onClick={signOut} className="rounded-2xl px-4 py-3 text-left font-bold text-mist hover:bg-white/10 hover:text-white">
+              Sign Out
+            </button>
           </div>
         </div>
       )}
@@ -428,9 +455,13 @@ const roleLabels = Object.fromEntries(roleOptions.map(([key, label]) => [key, la
 
 const roleHomeRoutes = {
   auctionee: "dashboard",
-  auctioneer: "sell",
+  auctioneer: "dashboard",
   admin: "admin"
 };
+
+const authSessionKey = "primebid-authenticated";
+const authChangedEvent = "primebid-auth-change";
+const demoLoginPin = import.meta.env.VITE_DEMO_LOGIN_PIN || "1234";
 
 function normalizeRole(role) {
   if (role === "buyer") return "auctionee";
@@ -439,17 +470,60 @@ function normalizeRole(role) {
 
 function persistRole(role) {
   const nextRole = normalizeRole(role);
-  localStorage.setItem("woo-auth-role", nextRole);
-  window.dispatchEvent(new Event("woo-role-change"));
+  localStorage.setItem("primebid-auth-role", nextRole);
+  window.dispatchEvent(new Event("primebid-role-change"));
   return nextRole;
 }
 
 function getStoredRole() {
-  return normalizeRole(localStorage.getItem("woo-auth-role"));
+  return normalizeRole(localStorage.getItem("primebid-auth-role"));
+}
+
+function persistAuthSession(role) {
+  const nextRole = persistRole(role);
+  localStorage.setItem(authSessionKey, "true");
+  window.dispatchEvent(new Event(authChangedEvent));
+  return nextRole;
+}
+
+function getAuthStatus() {
+  return localStorage.getItem(authSessionKey) === "true";
+}
+
+function clearAuthSession() {
+  localStorage.removeItem(authSessionKey);
+  window.dispatchEvent(new Event(authChangedEvent));
+  window.location.hash = "login";
 }
 
 function getRoleHomeRoute(role) {
   return roleHomeRoutes[normalizeRole(role)] || roleHomeRoutes.auctionee;
+}
+
+const routeAccess = {
+  home: ["auctionee"],
+  auctions: ["auctionee"],
+  lot: ["auctionee"],
+  vehicles: ["auctionee"],
+  property: ["auctionee"],
+  wallet: ["auctionee"],
+  dashboard: ["auctionee", "auctioneer"],
+  sell: ["auctioneer"],
+  "seller-lots": ["auctioneer"],
+  payouts: ["auctioneer"],
+  admin: ["admin"],
+  notifications: ["auctionee", "auctioneer", "admin"],
+  support: ["auctionee", "auctioneer", "admin"]
+};
+
+function getRouteAccessKey(route) {
+  if (/^lot-.+/.test(route)) return "lot";
+  return route || "home";
+}
+
+function canAccessRoute(role, route) {
+  const allowedRoles = routeAccess[getRouteAccessKey(route)];
+  return Boolean(allowedRoles?.includes(normalizeRole(role)));
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -525,12 +599,12 @@ function AuthBrandPanel({ mode }) {
 
       <div className="relative z-10 flex w-full flex-col justify-between gap-10">
         <div>
-          <a href="#home" className="inline-flex items-center gap-3">
+          <a href="#login" className="inline-flex items-center gap-3">
             <span className="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-gold to-green-success text-slate-950 shadow-gold">
               <Gavel size={24} />
             </span>
             <span>
-              <span className="block font-display text-2xl font-black">WooAuctions</span>
+              <span className="block font-display text-2xl font-black">PrimeBid</span>
               <span className="text-xs font-bold uppercase tracking-[0.22em] text-mist">Enterprise Auction OS</span>
             </span>
           </a>
@@ -585,12 +659,13 @@ function AuthBrandPanel({ mode }) {
 function AuthPage({ mode }) {
   const [form, setForm] = useState({
     fullName: "",
-    email: localStorage.getItem("woo-auth-email") || "",
+    email: localStorage.getItem("primebid-auth-email") || "",
     phone: "",
     password: "",
     confirmPassword: "",
     role: getStoredRole(),
     remember: true,
+    demoPin: "",
     otp: "",
     resetPassword: "",
     resetConfirm: ""
@@ -604,6 +679,8 @@ function AuthPage({ mode }) {
 
   const isForgot = mode === "forgot";
   const isOtp = mode === "otp";
+  const isDemoAuth = !isSupabaseConfigured;
+  const needsDemoPin = (mode === "login" || mode === "register") && isDemoAuth;
   const selectedRole = normalizeRole(form.role);
   const selectedRoleLabel = roleLabels[selectedRole];
   const cardTitle = mode === "login" ? `Sign in as ${selectedRoleLabel}` : mode === "register" ? `Create ${selectedRoleLabel} account` : mode === "otp" ? "Verify OTP code" : "Reset your password";
@@ -638,7 +715,8 @@ function AuthPage({ mode }) {
 
     if (mode === "login") {
       nextErrors.email = validateEmail();
-      nextErrors.password = validatePassword();
+      if (isSupabaseConfigured) nextErrors.password = validatePassword();
+      if (needsDemoPin && form.demoPin !== demoLoginPin) nextErrors.demoPin = "Enter the correct demo PIN";
     }
 
     if (mode === "register") {
@@ -648,6 +726,7 @@ function AuthPage({ mode }) {
       if (!roleLabels[normalizeRole(form.role)]) nextErrors.role = "Choose your account role";
       nextErrors.password = validatePassword();
       if (form.password !== form.confirmPassword) nextErrors.confirmPassword = "Passwords must match";
+      if (needsDemoPin && form.demoPin !== demoLoginPin) nextErrors.demoPin = "Enter the correct demo PIN";
     }
 
     if (mode === "otp") {
@@ -683,8 +762,8 @@ function AuthPage({ mode }) {
         } else {
           await wait();
         }
-        localStorage.setItem("woo-auth-email", form.email);
-        const role = persistRole(form.role);
+        localStorage.setItem("primebid-auth-email", form.email);
+        const role = persistAuthSession(form.role);
         pushToast(isSupabaseConfigured ? `Signed in as ${roleLabels[role]}.` : `Demo sign in as ${roleLabels[role]}. Add Supabase env keys for live auth.`);
         window.setTimeout(() => { window.location.hash = getRoleHomeRoute(role); }, 700);
       }
@@ -706,7 +785,7 @@ function AuthPage({ mode }) {
         } else {
           await wait();
         }
-        localStorage.setItem("woo-auth-email", form.email);
+        localStorage.setItem("primebid-auth-email", form.email);
         const role = persistRole(form.role);
         pushToast(`${roleLabels[role]} account created. Verify your OTP to finish setup.`);
         window.setTimeout(() => { window.location.hash = "otp-verification"; }, 650);
@@ -719,7 +798,7 @@ function AuthPage({ mode }) {
         } else {
           await wait();
         }
-        const role = getStoredRole();
+        const role = persistAuthSession(getStoredRole());
         pushToast(`OTP verified. Opening ${roleLabels[role]} workspace.`);
         window.setTimeout(() => { window.location.hash = getRoleHomeRoute(role); }, 650);
       }
@@ -733,7 +812,7 @@ function AuthPage({ mode }) {
         } else {
           await wait();
         }
-        localStorage.setItem("woo-auth-email", form.email);
+        localStorage.setItem("primebid-auth-email", form.email);
         setForgotStep("otp");
         pushToast("Reset code sent. Enter the OTP from your email.");
       } else if (isForgot && forgotStep === "otp") {
@@ -763,6 +842,12 @@ function AuthPage({ mode }) {
   };
 
   const socialLogin = async (provider) => {
+    if (!isSupabaseConfigured && form.demoPin !== demoLoginPin) {
+      setErrors((current) => ({ ...current, demoPin: "Enter the correct demo PIN first" }));
+      pushToast("Enter the demo PIN before using demo social login.", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       if (isSupabaseConfigured) {
@@ -773,7 +858,7 @@ function AuthPage({ mode }) {
         if (error) throw error;
       } else {
         await wait(580);
-        const role = persistRole(form.role);
+        const role = persistAuthSession(form.role);
         pushToast(`${provider === "google" ? "Google" : "GitHub"} demo sign in as ${roleLabels[role]}. Configure Supabase env keys for OAuth.`);
         window.setTimeout(() => { window.location.hash = getRoleHomeRoute(role); }, 650);
       }
@@ -813,9 +898,9 @@ function AuthPage({ mode }) {
             className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-panel/75 p-5 shadow-glass backdrop-blur-2xl sm:p-7"
           >
             <div className="mb-7 flex items-center justify-between gap-4">
-              <a href="#home" className="inline-flex items-center gap-2 text-sm font-bold text-mist transition hover:text-snow">
+              <a href="#login" className="inline-flex items-center gap-2 text-sm font-bold text-mist transition hover:text-snow">
                 <ArrowLeft size={16} />
-                Marketplace
+                Secure entry
               </a>
               <span className={`rounded-full border px-3 py-1 text-xs font-black ${isSupabaseConfigured ? "border-green-success/30 bg-green-success/10 text-green-success" : "border-gold/30 bg-gold/10 text-gold"}`}>
                 {isSupabaseConfigured ? "Supabase live" : "Demo auth"}
@@ -826,7 +911,7 @@ function AuthPage({ mode }) {
               <div className="chip mb-4 border-blue-premium/25 bg-blue-premium/10 text-snow"><ShieldCheck size={15} /> Bank-grade session security</div>
               <h2 className="font-display text-3xl font-black sm:text-4xl">{cardTitle}</h2>
               <p className="mt-3 text-sm leading-6 text-mist">
-                {isForgot && forgotStep === "otp" ? "Enter the recovery OTP sent to your inbox." : isForgot && forgotStep === "reset" ? "Create a fresh password for your WooAuctions account." : authModes[mode].copy}
+                {isForgot && forgotStep === "otp" ? "Enter the recovery OTP sent to your inbox." : isForgot && forgotStep === "reset" ? "Create a fresh password for your PrimeBid account." : authModes[mode].copy}
               </p>
             </div>
 
@@ -866,8 +951,15 @@ function AuthPage({ mode }) {
                 </div>
               )}
 
-              {(mode === "login" || mode === "register") && (
+              {(mode === "register" || (mode === "login" && isSupabaseConfigured)) && (
                 <AuthInput icon={LockKeyhole} label="Password" type={showPassword ? "text" : "password"} value={form.password} onChange={(event) => update("password", event.target.value)} placeholder="Minimum 8 characters" error={errors.password} action={passwordAction} />
+              )}
+
+              {needsDemoPin && (
+                <div>
+                  <AuthInput icon={KeyRound} label="Demo access PIN" type="password" inputMode="numeric" value={form.demoPin} onChange={(event) => update("demoPin", event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="Enter demo PIN" error={errors.demoPin} />
+                  <p className="mt-2 text-xs font-bold text-gold">Temporary frontend PIN required until backend auth is connected.</p>
+                </div>
               )}
 
               {mode === "register" && (
@@ -896,7 +988,7 @@ function AuthPage({ mode }) {
               )}
 
               <AuthButton loading={loading}>
-                {mode === "login" ? "Sign in to WooAuctions" : mode === "register" ? "Create secure account" : mode === "otp" ? "Verify OTP" : forgotStep === "email" ? "Send reset OTP" : forgotStep === "otp" ? "Verify recovery code" : "Reset password"}
+                {mode === "login" ? "Sign in to PrimeBid" : mode === "register" ? "Create secure account" : mode === "otp" ? "Verify OTP" : forgotStep === "email" ? "Send reset OTP" : forgotStep === "otp" ? "Verify recovery code" : "Reset password"}
               </AuthButton>
             </form>
 
@@ -922,7 +1014,7 @@ function AuthPage({ mode }) {
 
             <div className="mt-7 rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-sm text-mist">
               {mode === "login" ? (
-                <>New to WooAuctions? <a href="#register" className="font-black text-gold">Create account</a></>
+                <>New to PrimeBid? <a href="#register" className="font-black text-gold">Create account</a></>
               ) : mode === "register" ? (
                 <>Already verified? <a href="#login" className="font-black text-gold">Sign in</a></>
               ) : mode === "otp" ? (
@@ -962,7 +1054,7 @@ function Hero({ socketStatus, auctions }) {
             Discover verified auctions with confidence.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-mist">
-            WooAuctions brings high-value vehicles, property, electronics, luxury goods, and business assets into one trusted auction marketplace with live bidding, seller review, and clear lot information.
+            PrimeBid brings high-value vehicles, property, electronics, luxury goods, and business assets into one trusted auction marketplace with live bidding, seller review, and clear lot information.
           </p>
 
           <form onSubmit={submitSearch} className="mt-8 grid max-w-3xl gap-3 rounded-[1.75rem] border border-white/10 bg-panel/80 p-3 shadow-glass backdrop-blur-2xl sm:grid-cols-[auto_1fr_auto]">
@@ -1200,7 +1292,7 @@ function AuctionsPage({ auctions }) {
         eyebrow="Auction Marketplace"
         title="Advanced live auction discovery"
         copy="Search, filter, watch, inspect, and bid on verified live lots with reserve tracking and seller trust signals."
-        action={<a href="#login" className="premium-button"><UserPlus size={18} /> Join to Bid</a>}
+        action={<a href="#wallet" className="premium-button"><Wallet size={18} /> Check Wallet</a>}
       />
       <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
         <div className="glass mb-6 grid gap-3 rounded-[2rem] p-4 lg:grid-cols-[1fr_auto_auto]">
@@ -1323,7 +1415,7 @@ function DashboardPreview() {
   );
 }
 
-function DashboardPage() {
+function AuctioneeDashboardPage() {
   return (
     <>
       <PageHeader
@@ -1341,6 +1433,146 @@ function DashboardPage() {
             <p className="mt-2 text-sm text-mist">Personalized auctionee state ready for backend API hydration.</p>
           </div>
         ))}
+      </section>
+    </>
+  );
+}
+
+function AuctioneerDashboardPage({ pendingLots, approvedLots, rejectedLots }) {
+  const sellerLots = [
+    ...pendingLots.map((lot) => ({ ...lot, sellerStatus: "Pending admin review" })),
+    ...approvedLots.slice(0, 3).map((lot) => ({ ...lot, sellerStatus: "Live in marketplace" })),
+    ...rejectedLots.map((lot) => ({ ...lot, sellerStatus: "Needs revision" }))
+  ];
+  const liveLots = sellerLots.filter((lot) => lot.sellerStatus === "Live in marketplace").length;
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Auctioneer Dashboard"
+        title="Seller workspace for uploads, approvals, and payouts"
+        copy="Auctioneers manage submitted lots, proof readiness, admin review status, seller performance, and payout preparation without seeing admin moderation tools."
+        action={<a href="#sell" className="premium-button"><ImagePlus size={18} /> Upload New Lot</a>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:grid-cols-[1fr_0.85fr] lg:px-8">
+        <div className="glass rounded-[2rem] p-6">
+          <div className="grid gap-3 md:grid-cols-3">
+            <Metric label="Pending review" value={pendingLots.length} />
+            <Metric label="Live lots" value={liveLots} />
+            <Metric label="Payouts due" value="KES 286k" />
+          </div>
+          <div className="mt-6 space-y-3">
+            {sellerLots.slice(0, 4).map((lot) => (
+              <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 sm:grid-cols-[4rem_1fr_auto]" key={`${lot.id}-${lot.sellerStatus}`}>
+                <img className="h-16 w-16 rounded-2xl object-cover" src={lot.image} alt={lot.title} />
+                <div className="min-w-0">
+                  <div className="truncate font-display text-lg font-black">{lot.title}</div>
+                  <div className="text-sm text-mist">{lot.id} / {lot.category}</div>
+                </div>
+                <span className="self-center rounded-full border border-gold/20 bg-gold/10 px-3 py-2 text-xs font-black text-gold">{lot.sellerStatus}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="soft-card rounded-[2rem] p-6">
+          <ClipboardCheck className="mb-5 text-gold" size={34} />
+          <h2 className="font-display text-3xl font-black">What sellers can do</h2>
+          <div className="mt-5 space-y-3">
+            {["Upload lots with reserve price and proof", "Track whether admin approved, rejected, or still reviews", "Prepare payout information after completed sales", "Edit rejected drafts before resubmission"].map((item) => (
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-sm font-bold text-mist" key={item}>
+                <CheckCircle2 className="text-green-success" size={18} />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function DashboardPage({ role, pendingLots, approvedLots, rejectedLots }) {
+  return normalizeRole(role) === "auctioneer"
+    ? <AuctioneerDashboardPage pendingLots={pendingLots} approvedLots={approvedLots} rejectedLots={rejectedLots} />
+    : <AuctioneeDashboardPage />;
+}
+
+function SellerLotsPage({ pendingLots, approvedLots, rejectedLots }) {
+  const groups = [
+    ["Pending Review", pendingLots, "Admin has not published these lots yet."],
+    ["Live Lots", approvedLots.slice(0, 6), "Published lots visible to auctionees."],
+    ["Needs Revision", rejectedLots, "Revise proof, reserve, or item information before resubmitting."]
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Seller Inventory"
+        title="Your submitted lots and review status"
+        copy="A seller-only view of drafts, pending approvals, live listings, and rejected submissions. Admin controls stay hidden from this workspace."
+        action={<a href="#sell" className="premium-button"><ImagePlus size={18} /> Upload Lot</a>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:px-8">
+        {groups.map(([title, lots, copy]) => (
+          <div className="soft-card rounded-[2rem] p-6" key={title}>
+            <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+              <div>
+                <h2 className="font-display text-2xl font-black">{title}</h2>
+                <p className="text-sm text-mist">{copy}</p>
+              </div>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-black text-gold">{lots.length} lots</span>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {lots.map((lot) => (
+                <article className="rounded-3xl border border-white/10 bg-white/5 p-4" key={`${title}-${lot.id}`}>
+                  <img className="mb-4 h-40 w-full rounded-2xl object-cover" src={lot.image} alt={lot.title} />
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    <span className="chip">{lot.id}</span>
+                    <span className="chip">{lot.category}</span>
+                  </div>
+                  <h3 className="font-display text-xl font-black">{lot.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-mist">{lot.approvalNote || lot.inspection}</p>
+                </article>
+              ))}
+              {lots.length === 0 && <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-mist">Nothing here yet.</div>}
+            </div>
+          </div>
+        ))}
+      </section>
+    </>
+  );
+}
+
+function SellerPayoutsPage() {
+  return (
+    <>
+      <PageHeader
+        eyebrow="Seller Payouts"
+        title="Payouts, settlement status, and seller fees"
+        copy="Auctioneers see only seller finance information: completed sales, expected payout dates, settlement holds, and fee estimates."
+        action={<button className="premium-button"><CreditCard size={18} /> Add Payout Method</button>}
+      />
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:px-8">
+        <div className="glass rounded-[2rem] p-6">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Metric label="Available payout" value="KES 286k" />
+            <Metric label="In escrow" value="KES 920k" />
+            <Metric label="Platform fees" value="KES 42k" />
+          </div>
+          <div className="mt-6 space-y-3">
+            {["AU-901 settlement pending buyer confirmation", "AU-602 payout scheduled Friday", "AU-778 escrow hold active"].map((item) => (
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4 text-sm font-bold text-mist" key={item}>
+                <span>{item}</span>
+                <CheckCircle2 className="text-green-success" size={18} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="soft-card rounded-[2rem] p-6">
+          <Wallet className="mb-5 text-gold" size={34} />
+          <h2 className="font-display text-3xl font-black">Seller finance only</h2>
+          <p className="mt-3 leading-7 text-mist">Bidder wallets and client payment holds are kept separate from seller payout records.</p>
+        </div>
       </section>
     </>
   );
@@ -1415,8 +1647,8 @@ function WalletPage() {
     <>
       <PageHeader
         eyebrow="Wallet"
-        title="Balances, holds, deposits, and payouts"
-        copy="A dedicated finance center for available balance, active bid holds, deposits, refunds, and transaction history."
+        title="Balances, holds, deposits, and refunds"
+        copy="A dedicated bidder finance center for available balance, active bid holds, deposits, refunds, and transaction history."
         action={<button className="premium-button"><CreditCard size={18} /> Add Funds</button>}
       />
       <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-10 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:px-8">
@@ -1643,7 +1875,7 @@ function AuctioneerUploadPage({ onSubmitLot }) {
         eyebrow="Auctioneer Workspace"
         title="Upload goods for admin approval"
         copy="Auctioneers can submit goods with reserve price, seller details, photos, and camera proof. The lot stays hidden until an admin approves it."
-        action={<a href="#admin" className="blue-button"><ClipboardCheck size={18} /> Open Admin Queue</a>}
+        action={<a href="#seller-lots" className="blue-button"><ClipboardCheck size={18} /> View My Lots</a>}
       />
       <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-[1fr_0.85fr] lg:px-8">
         <form onSubmit={submit} className="soft-card rounded-[2rem] p-6">
@@ -1686,11 +1918,18 @@ function AuctioneerUploadPage({ onSubmitLot }) {
   );
 }
 
-function SupportPage() {
+function SupportPage({ role }) {
   const [messages, setMessages] = useState([
     ["assistant", "Hello, I can help with bidding, wallet balances, seller uploads, approvals, camera proof, and account questions."]
   ]);
   const [input, setInput] = useState("");
+  const currentRole = normalizeRole(role);
+  const supportAction =
+    currentRole === "admin"
+      ? <a href="#admin" className="premium-button"><ShieldAlert size={18} /> Admin Control</a>
+      : currentRole === "auctioneer"
+        ? <a href="#sell" className="premium-button"><Camera size={18} /> Upload Lot</a>
+        : <a href="#auctions" className="premium-button"><Gavel size={18} /> Browse Auctions</a>;
 
   const replyFor = (text) => {
     const query = text.toLowerCase();
@@ -1715,7 +1954,7 @@ function SupportPage() {
         eyebrow="AI Customer Care"
         title="Auction support assistant"
         copy="A local AI-mode support panel for common customer questions. It can later connect to a real AI API and your helpdesk tickets."
-        action={<a href="#sell" className="premium-button"><Camera size={18} /> Auctioneer Upload</a>}
+        action={supportAction}
       />
       <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-16 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
         <div className="glass rounded-[2rem] p-6">
@@ -1748,8 +1987,9 @@ function SupportPage() {
   );
 }
 
-function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
-  const historyKey = "woo-react-ai-hub-history";
+function FloatingAIHub({ route, role, auctions, pendingLots, rejectedLots }) {
+  const historyKey = "primebid-react-ai-hub-history";
+  const currentRole = normalizeRole(role);
   const lotMatch = route.match(/^lot-(.+)$/);
   const currentLot = lotMatch ? auctions.find((lot) => lot.id === lotMatch[1]) : null;
   const messagesRef = useRef(null);
@@ -1766,7 +2006,7 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
     return [
       {
         role: "assistant",
-        text: "Hi, I am the WooAuctions AI Hub. I float on every screen and can help with auctions, bids, wallets, seller uploads, approvals, and admin questions."
+        text: "Hi, I am the PrimeBid AI Hub. I float on every screen and can help with auctions, bids, wallets, seller uploads, approvals, and admin questions."
       }
     ];
   });
@@ -1781,12 +2021,16 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
     if (route === "vehicles") return "Watching vehicle auctions. I can help compare logbook checks, inspection proof, bid holds, and escrow steps.";
     if (route === "property") return "Watching property auctions. I can help with title checks, deposit flow, reserve progress, and document questions.";
     if (route === "sell") return "Watching the auctioneer upload flow. I can help submit goods, check camera proof, and explain admin approval.";
+    if (route === "seller-lots") return "Watching your seller inventory. I can explain pending review, live lots, rejected drafts, and next upload steps.";
+    if (route === "payouts") return "Watching seller payouts. I can explain settlement holds, payout methods, and expected payout timing.";
     if (route === "admin") return `Watching admin approval. ${pendingLots.length} lot(s) are pending and ${rejectedLots.length} draft(s) are rejected.`;
     if (route === "wallet") return "Watching the Wallet page. I can explain balances, active bid holds, deposits, refunds, and payment methods.";
-    if (route === "dashboard") return "Watching the auctionee dashboard. I can explain performance, active bids, watchlists, and alerts.";
+    if (route === "dashboard") return currentRole === "auctioneer" ? "Watching the auctioneer dashboard. I can explain uploads, approvals, lots, and payouts." : "Watching the auctionee dashboard. I can explain performance, active bids, watchlists, and alerts.";
     if (route === "notifications") return "Watching notifications. I can explain outbid alerts, wallet events, seller messages, and admin warnings.";
     if (["login", "register", "forgot-password", "otp-verification"].includes(route)) return "Watching secure authentication. I can help with sign in, registration, OTP verification, password reset, and Supabase setup.";
-    return "Watching the WooAuctions marketplace. I can guide a user from discovery to bidding, payment, upload, or admin review.";
+    if (currentRole === "admin") return "Watching the admin workspace. I can help with approvals, user risk, moderation, and platform health.";
+    if (currentRole === "auctioneer") return "Watching the seller workspace. I can help with uploads, review status, proof, and payouts.";
+    return "Watching the PrimeBid marketplace. I can guide a bidder from discovery to bidding, payment, and watchlists.";
   };
 
   const replyFor = (text) => {
@@ -1798,6 +2042,9 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
     }
 
     if (includesAny(query, ["bid", "bidding", "auto", "proxy", "place", "reserve"])) {
+      if (currentRole !== "auctionee") {
+        return "Bid rooms are only available in the Auctionee workspace. This session is separated from client bidding so seller/admin work cannot place or manage customer bids.";
+      }
       if (currentLot) {
         if (amount && amount <= currentLot.bid) {
           return `For ${currentLot.title}, bid above ${formatKes(currentLot.bid)} to compete. Proxy bidding is best when you want the system to protect you up to a private maximum.`;
@@ -1811,18 +2058,25 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
     }
 
     if (includesAny(query, ["pay", "payment", "mpesa", "m-pesa", "wallet", "deposit", "refund", "escrow"])) {
+      if (currentRole === "auctioneer") return "Seller finance is handled in Payouts. Bidder wallets and payment holds stay separate from auctioneer payout records.";
+      if (currentRole === "admin") return "Admins can monitor payment risk and escrow state, but bidder wallet actions stay inside the client workspace.";
       return "Wallet funding supports bid holds and quick checkout. For M-Pesa, the app can trigger an STK push; for high-value lots, escrow keeps money protected until buyer and seller checks are complete.";
     }
 
     if (includesAny(query, ["upload", "seller", "auctioneer", "camera", "proof", "approve", "approval"])) {
+      if (currentRole === "auctionee") return "Auctioneer upload tools are not available in the client workspace. Clients can browse, bid, fund wallets, and track wins only.";
+      if (currentRole === "admin") return `Admin can review seller proof in Admin Control. Seller upload forms stay outside the admin session. Current pending queue: ${pendingLots.length}.`;
       return `Auctioneers submit goods from the upload screen with reserve, category, image, and camera proof. Admins then review pending lots before publishing. Current pending queue: ${pendingLots.length}.`;
     }
 
     if (includesAny(query, ["admin", "reject", "moderation", "user", "flag", "queue"])) {
+      if (currentRole !== "admin") return "Admin moderation is not visible in this role. Sign in as Admin from the login screen to access approvals, user risk, and platform controls.";
       return `Admin work starts in the approval queue: verify seller proof, documents, reserve price, and item condition before approving. Rejected drafts stay hidden from bidders.`;
     }
 
     if (includesAny(query, ["find", "search", "filter", "category", "vehicle", "property", "luxury", "electronics"])) {
+      if (currentRole === "auctioneer") return "Use Seller Desk or My Lots to search your submitted goods, review status, drafts, and payouts.";
+      if (currentRole === "admin") return "Use Admin Control to search approvals, users, flagged listings, and moderation queues.";
       const examples = auctions.slice(0, 3).map((lot) => `${lot.title} at ${formatKes(lot.bid)}`).join("; ");
       return `Use Auctions for all lots, or jump into Vehicles and Property for asset-specific views. Current examples: ${examples}.`;
     }
@@ -1841,9 +2095,13 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
   const suggestions = () => {
     if (currentLot) return ["Should I bid now?", "Explain proxy bidding", "What should I verify?"];
     if (route === "sell") return ["How do I upload goods?", "Check camera proof", "What happens after approval?"];
+    if (route === "seller-lots") return ["What needs revision?", "What is pending?", "How do live lots work?"];
+    if (route === "payouts") return ["Explain payout holds", "When do I get paid?", "What are seller fees?"];
     if (route === "admin") return ["What needs approval?", "How do I reject safely?", "Summarize admin work"];
     if (route === "wallet") return ["Explain balances", "What are bid holds?", "How do deposits work?"];
     if (["login", "register", "forgot-password", "otp-verification"].includes(route)) return ["Help me sign in", "Explain OTP", "Supabase setup"];
+    if (currentRole === "admin") return ["What needs approval?", "Summarize risk alerts", "How do I reject safely?"];
+    if (currentRole === "auctioneer") return ["Upload a lot", "Check my lots", "Explain payouts"];
     return ["Help me find an auction", "How do I place a bid?", "How does wallet payment work?"];
   };
 
@@ -1874,7 +2132,16 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
     if (action === "lot" && auctions[0]) window.location.hash = `lot-${auctions[0].id}`;
     if (action === "admin") window.location.hash = "admin";
     if (action === "wallet") window.location.hash = "wallet";
+    if (action === "sell") window.location.hash = "sell";
+    if (action === "seller-lots") window.location.hash = "seller-lots";
+    if (action === "payouts") window.location.hash = "payouts";
     setOpen(true);
+  };
+
+  const quickActions = () => {
+    if (currentRole === "admin") return [["admin", "Admin Control"], ["search", "Focus search"]];
+    if (currentRole === "auctioneer") return [["sell", "Upload"], ["seller-lots", "My lots"], ["payouts", "Payouts"], ["search", "Focus search"]];
+    return [["search", "Focus search"], ["auctions", "Auctions"], ["lot", "Open lot"], ["wallet", "Wallet"]];
   };
 
   useEffect(() => {
@@ -1887,8 +2154,8 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
 
   useEffect(() => {
     const openHub = () => setOpen(true);
-    window.addEventListener("woo-open-ai-hub", openHub);
-    return () => window.removeEventListener("woo-open-ai-hub", openHub);
+    window.addEventListener("primebid-open-ai-hub", openHub);
+    return () => window.removeEventListener("primebid-open-ai-hub", openHub);
   }, []);
 
   useEffect(() => {
@@ -1933,13 +2200,7 @@ function FloatingAIHub({ route, auctions, pendingLots, rejectedLots }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {[
-            ["search", "Focus search"],
-            ["auctions", "Auctions"],
-            ["lot", "Open lot"],
-            ["wallet", "Wallet"],
-            ["admin", "Admin"]
-          ].map(([action, label]) => (
+          {quickActions().map(([action, label]) => (
             <button key={action} type="button" onClick={() => runAction(action)} className="rounded-full border border-gold/20 bg-gold/10 px-3 py-2 text-xs font-black text-gold">
               {label}
             </button>
@@ -1991,13 +2252,21 @@ function ActivityFeed() {
   );
 }
 
-function NotificationsPage() {
+function NotificationsPage({ role }) {
+  const currentRole = normalizeRole(role);
+  const copy =
+    currentRole === "admin"
+      ? "Admin-only alerts for flagged listings, approval pressure, user health, and moderation signals."
+      : currentRole === "auctioneer"
+        ? "Seller alerts for approval outcomes, buyer messages, payout movement, and listing performance."
+        : "Bidder alerts for outbid notices, winning updates, watchlist movement, and wallet events.";
+
   return (
     <>
       <PageHeader
         eyebrow="Notification Center"
-        title="Realtime alerts and bidder events"
-        copy="A dedicated notification hub for outbid alerts, winning notices, wallet events, seller messages, and admin warnings."
+        title={currentRole === "admin" ? "Risk alerts and moderation events" : currentRole === "auctioneer" ? "Seller alerts and payout events" : "Realtime alerts and bidder events"}
+        copy={copy}
       />
       <section className="mx-auto max-w-4xl px-4 pb-16 sm:px-6 lg:px-8">
         <ActivityFeed />
@@ -2020,23 +2289,25 @@ function RoleAccessPage({ requiredRole, currentRole }) {
       />
       <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6 lg:px-8">
         <div className="soft-card rounded-[2rem] p-6">
-          <div className="grid gap-4 md:grid-cols-3">
-            {roleOptions.map(([key, label, Icon, description]) => (
-              <a
-                key={key}
-                href="#login"
-                onClick={() => persistRole(key)}
-                className={`rounded-3xl border p-5 transition hover:-translate-y-1 ${key === requiredRole ? "border-gold/40 bg-gold/10 text-gold" : "border-white/10 bg-white/[0.045] text-mist hover:text-snow"}`}
-              >
-                <Icon className="mb-4" />
-                <h2 className="font-display text-xl font-black">{label}</h2>
-                <p className="mt-2 text-sm leading-6">{description}</p>
-              </a>
-            ))}
-          </div>
+          <ShieldAlert className="mb-5 text-gold" size={34} />
+          <h2 className="font-display text-2xl font-black">Protected workspace</h2>
+          <p className="mt-3 max-w-2xl leading-7 text-mist">
+            You are signed in as {currentLabel}. To enter the {requiredLabel} workspace, sign in again using that role and the demo PIN. Role switching is handled through the secure login screen.
+          </p>
         </div>
       </section>
     </>
+  );
+}
+
+function RoleRedirectPage({ role }) {
+  return (
+    <PageHeader
+      eyebrow="Workspace Boundary"
+      title="Opening your authorized workspace"
+      copy={`This session is signed in as ${roleLabels[normalizeRole(role)]}. PrimeBid keeps admin, seller, and bidder workspaces separated, so this route is being redirected to the correct area.`}
+      action={<a href={`#${getRoleHomeRoute(role)}`} className="premium-button"><ShieldCheck size={18} /> Continue</a>}
+    />
   );
 }
 
@@ -2066,37 +2337,64 @@ function App() {
   const socketStatus = useSocketStatus();
   const route = useRoute();
   const [activeRole, setActiveRole] = useState(getStoredRole);
-  const [approvedLots, setApprovedLots] = useState(() => loadStoredLots("woo-approved-lots", initialAuctions));
-  const [pendingLots, setPendingLots] = useState(() => loadStoredLots("woo-pending-lots", initialPendingLots));
-  const [rejectedLots, setRejectedLots] = useState(() => loadStoredLots("woo-rejected-lots", []));
+  const [isAuthenticated, setIsAuthenticated] = useState(getAuthStatus);
+  const [approvedLots, setApprovedLots] = useState(() => loadStoredLots("primebid-approved-lots", initialAuctions));
+  const [pendingLots, setPendingLots] = useState(() => loadStoredLots("primebid-pending-lots", initialPendingLots));
+  const [rejectedLots, setRejectedLots] = useState(() => loadStoredLots("primebid-rejected-lots", []));
   const lotMatch = route.match(/^lot-(.+)$/);
   const visibleAuctions = approvedLots.filter((lot) => lot.status === "approved");
+  const authModeByRoute = {
+    login: "login",
+    register: "register",
+    "forgot-password": "forgot",
+    "otp-verification": "otp"
+  };
+  const authMode = authModeByRoute[route];
 
   useEffect(() => {
     const syncRole = () => setActiveRole(getStoredRole());
-    window.addEventListener("woo-role-change", syncRole);
+    window.addEventListener("primebid-role-change", syncRole);
     window.addEventListener("storage", syncRole);
     return () => {
-      window.removeEventListener("woo-role-change", syncRole);
+      window.removeEventListener("primebid-role-change", syncRole);
       window.removeEventListener("storage", syncRole);
     };
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("woo-approved-lots", JSON.stringify(approvedLots));
+    const syncAuth = () => setIsAuthenticated(getAuthStatus());
+    window.addEventListener(authChangedEvent, syncAuth);
+    window.addEventListener("storage", syncAuth);
+    return () => {
+      window.removeEventListener(authChangedEvent, syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated && !authMode && route !== "login") {
+      window.location.hash = "login";
+    }
+    if (isAuthenticated && !authMode && !canAccessRoute(activeRole, route)) {
+      window.location.hash = getRoleHomeRoute(activeRole);
+    }
+  }, [activeRole, authMode, isAuthenticated, route]);
+
+  useEffect(() => {
+    localStorage.setItem("primebid-approved-lots", JSON.stringify(approvedLots));
   }, [approvedLots]);
 
   useEffect(() => {
-    localStorage.setItem("woo-pending-lots", JSON.stringify(pendingLots));
+    localStorage.setItem("primebid-pending-lots", JSON.stringify(pendingLots));
   }, [pendingLots]);
 
   useEffect(() => {
-    localStorage.setItem("woo-rejected-lots", JSON.stringify(rejectedLots));
+    localStorage.setItem("primebid-rejected-lots", JSON.stringify(rejectedLots));
   }, [rejectedLots]);
 
   const submitLot = (lot) => {
     setPendingLots((current) => [lot, ...current]);
-    window.location.hash = activeRole === "admin" ? "admin" : "sell";
+    window.location.hash = "seller-lots";
   };
 
   const approveLot = (id) => {
@@ -2121,19 +2419,27 @@ function App() {
     setPendingLots((current) => current.filter((item) => item.id !== id));
   };
 
-  const authModeByRoute = {
-    login: "login",
-    register: "register",
-    "forgot-password": "forgot",
-    "otp-verification": "otp"
-  };
-  const authMode = authModeByRoute[route];
-
   if (authMode) {
     return (
       <div className="min-h-screen bg-midnight text-snow">
         <AuthPage mode={authMode} />
-        <FloatingAIHub route={route} auctions={visibleAuctions} pendingLots={pendingLots} rejectedLots={rejectedLots} />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-midnight text-snow">
+        <AuthPage mode="login" />
+      </div>
+    );
+  }
+
+  if (!canAccessRoute(activeRole, route)) {
+    return (
+      <div className="min-h-screen overflow-hidden bg-midnight text-snow">
+        <Navbar route={route} role={activeRole} />
+        <RoleRedirectPage role={activeRole} />
       </div>
     );
   }
@@ -2141,20 +2447,23 @@ function App() {
   let page;
   if (lotMatch) page = <LotPage lotId={lotMatch[1]} auctions={visibleAuctions} />;
   else if (route === "auctions") page = <AuctionsPage auctions={visibleAuctions} />;
-  else if (route === "sell") page = activeRole === "auctioneer" || activeRole === "admin" ? <AuctioneerUploadPage onSubmitLot={submitLot} /> : <RoleAccessPage requiredRole="auctioneer" currentRole={activeRole} />;
+  else if (route === "sell") page = <AuctioneerUploadPage onSubmitLot={submitLot} />;
+  else if (route === "seller-lots") page = <SellerLotsPage pendingLots={pendingLots} approvedLots={visibleAuctions} rejectedLots={rejectedLots} />;
+  else if (route === "payouts") page = <SellerPayoutsPage />;
   else if (route === "vehicles") page = <AssetPage type="Vehicles" auctions={visibleAuctions} />;
   else if (route === "property") page = <AssetPage type="Property" auctions={visibleAuctions} />;
-  else if (route === "dashboard") page = <DashboardPage />;
-  else if (route === "admin") page = activeRole === "admin" ? <AdminPage pendingLots={pendingLots} approvedLots={visibleAuctions} rejectedLots={rejectedLots} onApproveLot={approveLot} onRejectLot={rejectLot} /> : <RoleAccessPage requiredRole="admin" currentRole={activeRole} />;
+  else if (route === "dashboard") page = <DashboardPage role={activeRole} pendingLots={pendingLots} approvedLots={visibleAuctions} rejectedLots={rejectedLots} />;
+  else if (route === "admin") page = <AdminPage pendingLots={pendingLots} approvedLots={visibleAuctions} rejectedLots={rejectedLots} onApproveLot={approveLot} onRejectLot={rejectLot} />;
   else if (route === "wallet") page = <WalletPage />;
-  else if (route === "notifications") page = <NotificationsPage />;
+  else if (route === "notifications") page = <NotificationsPage role={activeRole} />;
+  else if (route === "support") page = <SupportPage role={activeRole} />;
   else page = <HomePage socketStatus={socketStatus} auctions={visibleAuctions} />;
 
   return (
     <div className="min-h-screen overflow-hidden bg-midnight text-snow">
       <Navbar route={route} role={activeRole} />
       {page}
-      <FloatingAIHub route={route} auctions={visibleAuctions} pendingLots={pendingLots} rejectedLots={rejectedLots} />
+      <FloatingAIHub route={route} role={activeRole} auctions={visibleAuctions} pendingLots={pendingLots} rejectedLots={rejectedLots} />
     </div>
   );
 }

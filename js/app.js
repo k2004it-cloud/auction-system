@@ -1,4 +1,8 @@
 const AuctionApp = (() => {
+  const authSessionKey = "primebid-authenticated";
+  const roleStorageKey = "primebid-auth-role";
+  const demoLoginPin = window.PRIMEBID_DEMO_PIN || "1234";
+
   const toast = (message, type = "info") => {
     let region = document.querySelector(".toast-region");
     if (!region) {
@@ -168,6 +172,19 @@ const AuctionApp = (() => {
     auctionee: "auctionee-dashboard.html"
   };
 
+  const pageAccess = {
+    "index.html": ["auctionee"],
+    "browse-auctions.html": ["auctionee"],
+    "auction-details.html": ["auctionee"],
+    "place-bid.html": ["auctionee"],
+    "auctionee-dashboard.html": ["auctionee"],
+    "auctioneer-dashboard.html": ["auctioneer"],
+    "admin-dashboard.html": ["admin"],
+    "admin-auctions.html": ["admin"],
+    "admin-categories.html": ["admin"],
+    "admin-users.html": ["admin"]
+  };
+
   const normalizeRole = (role) => (roleLabels[role] ? role : "auctionee");
 
   const getSelectedRole = (form) => {
@@ -177,10 +194,35 @@ const AuctionApp = (() => {
 
   const openRoleWorkspace = (role) => {
     const nextRole = normalizeRole(role);
-    localStorage.setItem("woo-auth-role", nextRole);
+    localStorage.setItem(roleStorageKey, nextRole);
+    localStorage.setItem(authSessionKey, "true");
     window.setTimeout(() => {
       window.location.href = roleDestinations[nextRole];
     }, 760);
+  };
+
+  const hasValidDemoPin = (form) => {
+    const pin = form.querySelector("[data-demo-pin]")?.value || "";
+    if (pin === demoLoginPin) return true;
+    toast(`Enter the correct demo PIN. Temporary PIN: ${demoLoginPin}`, "error");
+    return false;
+  };
+
+  const initAccessGate = () => {
+    const page = window.location.pathname.toLowerCase().split("/").pop() || "index.html";
+    if (page !== "login.html" && localStorage.getItem(authSessionKey) !== "true") {
+      window.location.href = "login.html";
+      return false;
+    }
+    if (page !== "login.html") {
+      const role = normalizeRole(localStorage.getItem(roleStorageKey));
+      const allowedRoles = pageAccess[page];
+      if (allowedRoles && !allowedRoles.includes(role)) {
+        window.location.href = roleDestinations[role];
+        return false;
+      }
+    }
+    return true;
   };
 
   const initForms = () => {
@@ -189,6 +231,7 @@ const AuctionApp = (() => {
         event.preventDefault();
 
         if (form.id === "loginForm") {
+          if (!hasValidDemoPin(form)) return;
           const role = getSelectedRole(form);
           toast(`Login successful. Opening ${roleLabels[role]} workspace.`, "success");
           openRoleWorkspace(role);
@@ -196,6 +239,7 @@ const AuctionApp = (() => {
         }
 
         if (form.id === "registerForm") {
+          if (!hasValidDemoPin(form)) return;
           const password = form.querySelector("#reg-password")?.value;
           const confirm = form.querySelector("#reg-confirm")?.value;
           if (password !== confirm) return toast("Passwords do not match", "error");
@@ -235,7 +279,7 @@ const AuctionApp = (() => {
   const initAiHub = () => {
     if (document.querySelector("[data-ai-hub]")) return;
 
-    const historyKey = "woo-ai-hub-history";
+    const historyKey = "primebid-ai-hub-history";
     const pagePath = window.location.pathname.toLowerCase();
 
     const getPageType = () => {
@@ -264,7 +308,7 @@ const AuctionApp = (() => {
 
     const getContext = () => {
       const pageType = getPageType();
-      const title = document.querySelector("h1")?.textContent.trim() || document.title || "WooAuctions";
+      const title = document.querySelector("h1")?.textContent.trim() || document.title || "PrimeBid";
       const bidForm = document.querySelector("[data-bid-form]");
       const resultCount = document.querySelector("[data-result-count]")?.textContent.trim();
       const auctions = readVisibleAuctions();
@@ -300,7 +344,7 @@ const AuctionApp = (() => {
       if (context.pageType === "login") {
         return "You are on membership access. Choose Admin, Auctioneer, or Auctionee before signing in so the system opens the right workspace.";
       }
-      return "You are on WooAuctions home. I can help users find auctions, understand wallet balances, place bids, manage watchlists, and move to the right next step.";
+      return "You are on PrimeBid home. I can help users find auctions, understand wallet balances, place bids, manage watchlists, and move to the right next step.";
     };
 
     const includesAny = (value, words) => words.some((word) => value.includes(word));
@@ -374,7 +418,7 @@ const AuctionApp = (() => {
       return [
         {
           role: "assistant",
-          text: "Hi, I am the WooAuctions AI Hub. I hover here on every page and can help with bids, payments, filters, accounts, and admin tasks."
+          text: "Hi, I am the PrimeBid AI Hub. I hover here on every page and can help with bids, payments, filters, accounts, and admin tasks."
         }
       ];
     };
@@ -387,7 +431,7 @@ const AuctionApp = (() => {
         <span class="ai-hub-launcher-icon">AI</span>
         <span class="ai-hub-launcher-text">Ask Hub</span>
       </button>
-      <div class="ai-hub-panel" id="ai-hub-panel" role="dialog" aria-label="WooAuctions AI Hub" aria-modal="false">
+      <div class="ai-hub-panel" id="ai-hub-panel" role="dialog" aria-label="PrimeBid AI Hub" aria-modal="false">
         <div class="ai-hub-header">
           <div>
             <span class="ai-hub-kicker">Floating AI Hub</span>
@@ -534,13 +578,14 @@ const AuctionApp = (() => {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && hub.classList.contains("open")) setOpen(false);
     });
-    window.addEventListener("woo-open-ai-hub", () => setOpen(true));
+    window.addEventListener("primebid-open-ai-hub", () => setOpen(true));
 
     renderMessages();
     renderSuggestions();
   };
 
   const init = () => {
+    if (!initAccessGate()) return;
     initTheme();
     initTabs();
     initWatchlist();
