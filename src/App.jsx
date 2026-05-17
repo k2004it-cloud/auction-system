@@ -2021,15 +2021,15 @@ function FloatingAIHub({ route, role, auctions, pendingLots, rejectedLots }) {
     if (route === "vehicles") return "Watching vehicle auctions. I can help compare logbook checks, inspection proof, bid holds, and escrow steps.";
     if (route === "property") return "Watching property auctions. I can help with title checks, deposit flow, reserve progress, and document questions.";
     if (route === "sell") return "Watching the auctioneer upload flow. I can help submit goods, check camera proof, and explain admin approval.";
-    if (route === "seller-lots") return "Watching your seller inventory. I can explain pending review, live lots, rejected drafts, and next upload steps.";
-    if (route === "payouts") return "Watching seller payouts. I can explain settlement holds, payout methods, and expected payout timing.";
-    if (route === "admin") return `Watching admin approval. ${pendingLots.length} lot(s) are pending and ${rejectedLots.length} draft(s) are rejected.`;
-    if (route === "wallet") return "Watching the Wallet page. I can explain balances, active bid holds, deposits, refunds, and payment methods.";
-    if (route === "dashboard") return currentRole === "auctioneer" ? "Watching the auctioneer dashboard. I can explain uploads, approvals, lots, and payouts." : "Watching the auctionee dashboard. I can explain performance, active bids, watchlists, and alerts.";
-    if (route === "notifications") return "Watching notifications. I can explain outbid alerts, wallet events, seller messages, and admin warnings.";
-    if (["login", "register", "forgot-password", "otp-verification"].includes(route)) return "Watching secure authentication. I can help with sign in, registration, OTP verification, password reset, and Supabase setup.";
-    if (currentRole === "admin") return "Watching the admin workspace. I can help with approvals, user risk, moderation, and platform health.";
-    if (currentRole === "auctioneer") return "Watching the seller workspace. I can help with uploads, review status, proof, and payouts.";
+    if (route === "seller-lots") return "I can explain your pending review, live lots, rejected drafts, and next upload steps.";
+    if (route === "payouts") return "I can explain settlement holds, payout methods, timing, and expected revenue from your auctions.";
+    if (route === "admin") return `${pendingLots.length} auction(s) awaiting your approval. I can guide you through verification, moderation, and platform health.`;
+    if (route === "wallet") return "I can explain wallet balances, bid holds, M-Pesa deposits, refunds, and how escrow protects your payments.";
+    if (route === "dashboard") return currentRole === "auctioneer" ? "I can help you upload goods, track approvals, manage listings, and understand your payouts." : "I can explain your active bids, wins, watchlist activity, performance metrics, and real-time alerts.";
+    if (route === "notifications") return "I can explain outbid alerts, wallet events, seller messages, admin warnings, and status updates.";
+    if (["login", "register", "forgot-password", "otp-verification"].includes(route)) return "I can help with sign in, registration, OTP verification, password recovery, and account security.";
+    if (currentRole === "admin") return "I can help with auction approvals, user management, payment monitoring, and platform controls.";
+    if (currentRole === "auctioneer") return "I can help with uploading goods, tracking status, understanding approvals, and managing payouts.";
     return "Watching the PrimeBid marketplace. I can guide a bidder from discovery to bidding, payment, and watchlists.";
   };
 
@@ -2037,48 +2037,52 @@ function FloatingAIHub({ route, role, auctions, pendingLots, rejectedLots }) {
     const query = text.toLowerCase();
     const amount = Number(query.replace(/,/g, "").match(/\b\d+(\.\d+)?\b/)?.[0] || 0);
 
+    if (includesAny(query, ["hi", "hello", "hey", "what's up", "yo", "sup"])) {
+      return "Hey! 👋 I'm here to help you navigate PrimeBid. Ask me about bidding, auctions, payments, approvals, or anything else about the system—I've got you covered.";
+    }
+
     if (includesAny(query, ["where am i", "this page", "what page", "what can you do", "help"])) {
       return describeContext();
     }
 
     if (includesAny(query, ["bid", "bidding", "auto", "proxy", "place", "reserve"])) {
       if (currentRole !== "auctionee") {
-        return "Bid rooms are only available in the Auctionee workspace. This session is separated from client bidding so seller/admin work cannot place or manage customer bids.";
+        return "Bidding is for buyers (Auctionees). Switch to the Auctionee role at login to place bids. This workspace keeps seller and admin work separate from customer bidding.";
       }
       if (currentLot) {
         if (amount && amount <= currentLot.bid) {
-          return `For ${currentLot.title}, bid above ${formatKes(currentLot.bid)} to compete. Proxy bidding is best when you want the system to protect you up to a private maximum.`;
+          return `For ${currentLot.title}, you'll need to bid above ${formatKes(currentLot.bid)} to compete. Proxy bidding lets you set a maximum and the system bids automatically for you.`;
         }
         if (amount && amount > currentLot.bid) {
-          return `${formatKes(amount)} is above the current bid for ${currentLot.title}. Review the timer, reserve progress, and payment hold before confirming.`;
+          return `${formatKes(amount)} is above the current bid for ${currentLot.title}. Make sure you have enough wallet balance reserved and check how much time is left before confirming.`;
         }
-        return `For ${currentLot.title}, current bid is ${formatKes(currentLot.bid)} with ${currentLot.time} left. Use manual bidding for one bid, or proxy bidding to let the system raise gradually up to your limit.`;
+        return `Current bid for ${currentLot.title} is ${formatKes(currentLot.bid)} with ${currentLot.time} left. You can bid manually once or use proxy bidding to automatically raise your bid up to a limit you set.`;
       }
-      return "Open a lot first, review the current bid and reserve progress, then place a manual bid or set a proxy maximum. I can also take you to the auctions screen.";
+      return "Open an auction lot first to see the current bid and reserve. Then choose: manual bid for a single raise, or proxy bidding to let the system protect you up to your maximum.";
     }
 
     if (includesAny(query, ["pay", "payment", "mpesa", "m-pesa", "wallet", "deposit", "refund", "escrow"])) {
-      if (currentRole === "auctioneer") return "Seller finance is handled in Payouts. Bidder wallets and payment holds stay separate from auctioneer payout records.";
-      if (currentRole === "admin") return "Admins can monitor payment risk and escrow state, but bidder wallet actions stay inside the client workspace.";
-      return "Wallet funding supports bid holds and quick checkout. For M-Pesa, the app can trigger an STK push; for high-value lots, escrow keeps money protected until buyer and seller checks are complete.";
+      if (currentRole === "auctioneer") return "Seller payouts are in the Payouts section. Check your settlement holds, expected timing, and payout methods there.";
+      if (currentRole === "admin") return "You can monitor payment health and escrow state from the Payments dashboard. Wallet holds are managed per bidder.";
+      return "Fund your wallet via M-Pesa to place bid holds. When you bid, the amount is held; when you win, we finalize the payment. For expensive items, escrow protects both buyer and seller until verification is complete.";
     }
 
     if (includesAny(query, ["upload", "seller", "auctioneer", "camera", "proof", "approve", "approval"])) {
-      if (currentRole === "auctionee") return "Auctioneer upload tools are not available in the client workspace. Clients can browse, bid, fund wallets, and track wins only.";
-      if (currentRole === "admin") return `Admin can review seller proof in Admin Control. Seller upload forms stay outside the admin session. Current pending queue: ${pendingLots.length}.`;
-      return `Auctioneers submit goods from the upload screen with reserve, category, image, and camera proof. Admins then review pending lots before publishing. Current pending queue: ${pendingLots.length}.`;
+      if (currentRole === "auctionee") return "Selling is for Auctioneers. Switch to the Auctioneer role at login to upload goods and manage your listings.";
+      if (currentRole === "admin") return `Review seller submissions in Auction Approvals. ${pendingLots.length} lot(s) pending: verify proof, documents, reserve, and condition before approving.`;
+      return `Submit goods with reserve price, category, images, and camera proof. Admins verify everything before your auction goes live. ${pendingLots.length} lot(s) in the queue waiting.`;
     }
 
     if (includesAny(query, ["admin", "reject", "moderation", "user", "flag", "queue"])) {
-      if (currentRole !== "admin") return "Admin moderation is not visible in this role. Sign in as Admin from the login screen to access approvals, user risk, and platform controls.";
-      return `Admin work starts in the approval queue: verify seller proof, documents, reserve price, and item condition before approving. Rejected drafts stay hidden from bidders.`;
+      if (currentRole !== "admin") return "Admin controls are restricted to admins. Sign in with the Admin role at login to access approvals, users, payments, and platform settings.";
+      return `Your approval queue: verify seller proof, documents, reserve, and condition. You can approve or reject. Go to Auction Approvals to review the ${pendingLots.length} pending lot(s).`;
     }
 
     if (includesAny(query, ["find", "search", "filter", "category", "vehicle", "property", "luxury", "electronics"])) {
-      if (currentRole === "auctioneer") return "Use Seller Desk or My Lots to search your submitted goods, review status, drafts, and payouts.";
-      if (currentRole === "admin") return "Use Admin Control to search approvals, users, flagged listings, and moderation queues.";
+      if (currentRole === "auctioneer") return "Use My Lots to search your submitted goods, check status, track drafts, and manage listings.";
+      if (currentRole === "admin") return "Use the Admin search to find approvals, users, flagged listings, and risk alerts.";
       const examples = auctions.slice(0, 3).map((lot) => `${lot.title} at ${formatKes(lot.bid)}`).join("; ");
-      return `Use Auctions for all lots, or jump into Vehicles and Property for asset-specific views. Current examples: ${examples}.`;
+      return `Browse Auctions to see everything. Use filters for categories, search by title or lot ID, or jump to specific types. Right now: ${examples}.`;
     }
 
     if (includesAny(query, ["watch", "watchlist", "notification", "alert", "outbid"])) {
@@ -2089,7 +2093,7 @@ function FloatingAIHub({ route, role, auctions, pendingLots, rejectedLots }) {
       return "The auth system supports email/password login, registration by role, forgot-password recovery, OTP verification, social login buttons, validation, and Supabase calls when VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are configured.";
     }
 
-    return `I hear you: "${text}". ${describeContext()} Ask me about bidding, wallet balances, uploads, approvals, search, watchlists, or admin actions and I will respond in context.`;
+    return `Got it: "${text}". ${describeContext()} Ask me about bidding, wallet, approvals, uploads, searches, watchlists, or admin actions—I'll give you the details.`;
   };
 
   const suggestions = () => {
